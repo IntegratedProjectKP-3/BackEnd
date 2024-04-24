@@ -1,5 +1,6 @@
 package com.example.integratedpro.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,12 +13,11 @@ import lombok.NonNull;
 @Table(name = "task")
 public class HomePageTaskDTO {
     @Id
+    @JsonIgnore
     @Column(name = "taskId")
     private Integer Id;
     @Column(name = "taskTitle")
     private String title;
-    @Column(name = "taskDescription")
-    private String Desc;
     @Column(name = "taskAssignees")
     private String Assignees;
     @Column(name = "taskStatus")
