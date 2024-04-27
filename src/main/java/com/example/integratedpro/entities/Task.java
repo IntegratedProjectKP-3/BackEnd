@@ -4,13 +4,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Entity
 @Table(name = "task")
 @Getter
 @Setter
+@ToString
 public class Task {
     @Id
     @NonNull
