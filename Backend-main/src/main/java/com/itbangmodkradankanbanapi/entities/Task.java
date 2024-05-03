@@ -1,13 +1,7 @@
 package com.itbangmodkradankanbanapi.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.Date;
 
@@ -16,9 +10,11 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class Task {
     @Id
-    @NonNull
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // สร้างคีย์หลักโดยอัตโนมัติ
     @Column(name = "taskId")
     private Integer Id;
     @NonNull
@@ -31,10 +27,8 @@ public class Task {
     @NonNull
     @Column(name = "taskStatus")
     private String Status;
-    @NonNull
     @Column(name = "createdOn")
     private Date createdOn;
-    @NonNull
     @Column(name = "updatedOn")
     private Date updatedOn;
 }
