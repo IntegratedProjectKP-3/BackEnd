@@ -2,6 +2,7 @@ package com.itbangmodkradankanbanapi.Controller;
 
 import com.itbangmodkradankanbanapi.DTO.HomePageTaskDTO;
 import com.itbangmodkradankanbanapi.entities.Task;
+import com.itbangmodkradankanbanapi.repositories.TaskRepo;
 import com.itbangmodkradankanbanapi.service.ListMapper;
 import com.itbangmodkradankanbanapi.service.TaskServices;
 import org.modelmapper.ModelMapper;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @RestController
 //@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
-@CrossOrigin(origins ="http://localhosy:5173")
+@CrossOrigin(origins ="http://localhost:5173")
 @RequestMapping("/tasks")
 public class TaskController {
     @Autowired
@@ -25,6 +26,8 @@ public class TaskController {
     ModelMapper modelMapper;
     @Autowired
     ListMapper listMapper;
+    @Autowired
+    private TaskRepo taskRepo;
 
     @GetMapping
     public List<HomePageTaskDTO> getAllTask(){
@@ -32,28 +35,32 @@ public class TaskController {
     }
     @GetMapping("/{id}")
     public Task getTaskById(@PathVariable Integer id)  {
-        Task task = taskServices.findId(id);
-        return task;
+        return taskServices.findId(id);
     }
     @PostMapping()
-    public void addTask(@RequestBody List<Task> tasks) {
-        List<Task> savedTasks = new ArrayList<>();
+    public List<Task> addTask(@RequestBody List<Task> tasks) {
         for(Task task : tasks){
             if (task.getUpdatedOn() == null || task.getCreatedOn() == null) {
                 task.setCreatedOn(new Date());
                 task.setUpdatedOn(new Date());
             }
-            Task task1 = taskServices.addTask(task);
-            savedTasks.add(task1);
+           taskServices.addTask(task);
         }
+        return tasks;
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> Delete(@PathVariable Integer id){
-        if (!taskServices.deleteTask(id)){
-            return ResponseEntity.notFound().build();
-        }
-        else
-            return ResponseEntity.ok().build();
+    public Task Delete(@PathVariable Integer id) {
+        Task task = taskServices.findId(id);
+        taskServices.deleteTask(id);
+        return task;
     }
-    
-}
+    @PutMapping("/{id}")
+    public Task updateTask(@PathVariable Integer id, @RequestBody List<Task> tasks) {
+        Task task1 = taskServices.findId(id);
+            for(Task task : tasks){
+                taskServices.updateTask(task);
+            }
+            return task1;
+        }
+    }
+

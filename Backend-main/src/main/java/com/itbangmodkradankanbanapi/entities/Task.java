@@ -16,17 +16,17 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // สร้างคีย์หลักโดยอัตโนมัติ
     @Column(name = "taskId")
-    private Integer Id;
+    private Integer id;
     @NonNull
     @Column(name = "taskTitle")
     private String title;
     @Column(name = "taskDescription")
-    private String Desc;
+    private String description;
     @Column(name = "taskAssignees")
-    private String Assignees;
+    private String assignees;
     @NonNull
     @Column(name = "taskStatus")
-    private String Status;
+    private String status;
     @Column(name = "createdOn")
     private Date createdOn;
     @Column(name = "updatedOn")

@@ -13,11 +13,11 @@ public class HomePageTaskDTO {
     @Id
 //    @JsonIgnore
     @Column(name = "taskId")
-    private Integer Id;
+    private Integer id;
     @Column(name = "taskTitle")
     private String title;
     @Column(name = "taskAssignees")
-    private String Assignees;
+    private String assignees;
     @Column(name = "taskStatus")
-    private String Status;
+    private String status;
 }
