@@ -1,9 +1,7 @@
 package com.itbangmodkradankanbanapi.DTO;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.itbangmodkradankanbanapi.entities.Status;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -18,6 +16,10 @@ public class HomePageTaskDTO {
     private String title;
     @Column(name = "taskAssignees")
     private String assignees;
-    @Column(name = "taskStatus")
-    private String status;
+//    @Column(name = "taskStatus")
+//    private String status;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "status")
+    private Status status;
 }

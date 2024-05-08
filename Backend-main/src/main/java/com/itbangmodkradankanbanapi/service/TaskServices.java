@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -24,9 +25,24 @@ public class TaskServices {
     ModelMapper modelMapper;
     @Autowired
     ListMapper listMapper;
+
     public List<HomePageTaskDTO> getAllTask(){
         return listMapper.mapList(taskRepo.findAll(),HomePageTaskDTO.class,modelMapper);
     }
+
+//    public List<HomePageTaskDTO> getAllTask() {
+//        List<Task> tasks = taskRepo.findAll();
+//        List<HomePageTaskDTO> dtos = new ArrayList<>();
+//        for (Task task : tasks) {
+//            HomePageTaskDTO dto = modelMapper.map(task, HomePageTaskDTO.class);
+//            if (task.getStatus() != null) {
+//                dto.setStatus(task.getStatus());
+//            }
+//            dtos.add(dto);
+//        }
+//        return dtos;
+//    }
+
     public Task findId(Integer Id){
         return taskRepo.findById(Id).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId "+Id + " does not exist !!!"));
     }
