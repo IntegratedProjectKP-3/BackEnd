@@ -2,6 +2,7 @@ package com.itbangmodkradankanbanapi.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Formula;
 
 import java.util.Date;
 import java.util.List;
@@ -36,6 +37,9 @@ public class Task {
     private Date updatedOn;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "taskStatus")
-    private Status status;
+    @JoinColumn(name = "taskStatus",referencedColumnName = "statusId")
+    private Status  status;
+//    @Formula("(SELECT statusName FROM status s WHERE s.statusId = taskStatus)")
+//    private String statusName;
+
 }

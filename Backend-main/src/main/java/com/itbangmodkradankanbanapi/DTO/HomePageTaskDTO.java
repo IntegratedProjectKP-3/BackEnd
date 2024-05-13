@@ -16,10 +16,8 @@ public class HomePageTaskDTO {
     private String title;
     @Column(name = "taskAssignees")
     private String assignees;
-//    @Column(name = "taskStatus")
-//    private String status;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "status")
     private Status status;
+
 }
