@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class TaskServices {
     ModelMapper modelMapper;
     @Autowired
     ListMapper listMapper;
+
     public List<HomePageTaskDTO> getAllTask(){
         return listMapper.mapList(taskRepo.findAll(),HomePageTaskDTO.class,modelMapper);
     }
