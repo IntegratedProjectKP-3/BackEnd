@@ -3,6 +3,7 @@ package com.itbangmodkradankanbanapi.service;
 import com.itbangmodkradankanbanapi.entities.Status;
 import com.itbangmodkradankanbanapi.entities.Task;
 import com.itbangmodkradankanbanapi.repositories.StatusRepo;
+import com.itbangmodkradankanbanapi.repositories.TaskRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,12 +12,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 
 public class StatusServices {
     @Autowired
     private StatusRepo statusRepo;
+    @Autowired
+    private TaskRepo taskRepo;
     @Autowired
     ModelMapper modelMapper;
     @Autowired
@@ -39,9 +44,18 @@ public class StatusServices {
         statusRepo.saveAndFlush(statusRepo.save(status1));
         return true;
     }
-    public boolean deleteStatus(Integer id){
-            Status status1 = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        statusRepo.delete(status1);
+    public boolean deleteStatus(Integer id) {
+        Status status = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        List<Task> tasks = taskRepo.findAll();
+
+        for (Task task : tasks) {
+            if (Objects.equals(status.getStatusId(), task.getStatus().getStatusId())) {
+                Status defaultStatus = statusRepo.findById(1).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                task.setStatus(defaultStatus);
+                taskRepo.save(task);
+            }
+        }
+        statusRepo.delete(status);
         return true;
     }
 }
