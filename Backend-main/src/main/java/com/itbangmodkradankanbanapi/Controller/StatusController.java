@@ -1,6 +1,7 @@
 package com.itbangmodkradankanbanapi.Controller;
 
 import com.itbangmodkradankanbanapi.entities.Status;
+import com.itbangmodkradankanbanapi.entities.Task;
 import com.itbangmodkradankanbanapi.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.service.StatusServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,14 @@ public class StatusController {
     public Status Delete(@PathVariable Integer id) {
         Status status = statusServices.findId(id);
         statusServices.deleteStatus(id);
+        return status;
+    }
+    @PutMapping("/{id}")
+    public Status updateTask(@PathVariable Integer id, @RequestBody List<Status> statuses) {
+        Status status = statusServices.findId(id);
+        for(Status status1 : statuses){
+            statusServices.updateStatus(status1);
+        }
         return status;
     }
 }
