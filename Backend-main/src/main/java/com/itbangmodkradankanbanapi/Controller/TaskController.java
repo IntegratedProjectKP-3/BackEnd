@@ -16,8 +16,8 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-//@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
-@CrossOrigin(origins ="http://localhost:5173")
+@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
+//@CrossOrigin(origins ="http://localhost:5173")
 @RequestMapping("/tasks")
 public class TaskController {
     @Autowired
