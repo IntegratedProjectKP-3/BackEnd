@@ -47,7 +47,6 @@ public class StatusServices {
     public boolean deleteStatus(Integer id) {
         Status status = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         List<Task> tasks = taskRepo.findAll();
-
         for (Task task : tasks) {
             if (Objects.equals(status.getStatusId(), task.getStatus().getStatusId())) {
                 Status defaultStatus = statusRepo.findById(1).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

@@ -62,5 +62,17 @@ public class TaskController {
             }
             return task1;
         }
+    @GetMapping("/filter/{id}")
+    public List<Task> filterTask(@PathVariable Integer id){
+        return taskServices.filterTaskByStatus(id);
     }
+    @GetMapping("/sort/{OrderBy}")
+    public List<Task> sortTask(@PathVariable String OrderBy){
+        if (OrderBy.equals("desc")){
+            return taskServices.reverseSortTask();
+        }else{
+            return taskServices.sortTaskByStatus();
+        }
+    }
+}
 
