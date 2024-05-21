@@ -1,12 +1,18 @@
 package com.itbangmodkradankanbanapi.Controller;
 
+import com.itbangmodkradankanbanapi.DTO.StatusDTO;
 import com.itbangmodkradankanbanapi.entities.Status;
 import com.itbangmodkradankanbanapi.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.service.StatusServices;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,20 +27,45 @@ public class StatusController {
     private StatusRepo statusRepo;
 
     @GetMapping()
-    public  List<Status> getAllStatus(){
-        return statusServices.getAllStatus();
+    public ResponseEntity<Object> getAllStatus(){
+        return ResponseEntity.ok(statusServices.getAllStatus());
     }
-    @PostMapping()
-    public List<Status> addStatus(@RequestBody List<Status> status) {
-        for(Status status1 : status){
-            statusServices.AddStatus(status1);
-        }
-        return  status;
+
+    @PostMapping("")
+    public ResponseEntity<Object> addStatus(@Valid @RequestBody StatusDTO status) {
+        StatusDTO createdStatus = statusServices.addStatus(status);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdStatus);
     }
-    @DeleteMapping("/{id}")
-    public Status Delete(@PathVariable Integer id) {
-        Status status = statusServices.findId(id);
+
+
+
+    @PutMapping("/{id}")
+    public  ResponseEntity<StatusDTO> updateStatus(@PathVariable Integer id , @Valid @RequestBody StatusDTO status){
+        StatusDTO updatedStatus = statusServices.updateStatus(id,status);
+        return ResponseEntity.ok().body(updatedStatus);
+    }
+
+//    @DeleteMapping("/{id}")
+//    public Status Delete(@PathVariable Integer id) {
+//        Status status = statusServices.findId(id);
+//        statusServices.deleteStatus(id);
+//        return status;
+//    }
+
+    @DeleteMapping ("/{id}")
+    public ResponseEntity<Object> deleteStatus(@PathVariable Integer id){
         statusServices.deleteStatus(id);
-        return status;
+        return ResponseEntity.ok().body(new HashMap<>());
     }
-}
+
+    @DeleteMapping ("/{id}/{newId}")
+    public ResponseEntity<Object> deleteStatus(@PathVariable Integer id , @PathVariable Integer newId){
+        statusServices.deleteStatusAndTransfer(id,newId);
+        return  ResponseEntity.ok().body(new HashMap<>());
+    }
+
+    @GetMapping("/{id}")
+    public Status getStatusById(@PathVariable Integer id){
+        return statusServices.findId(id);
+    }
+    }

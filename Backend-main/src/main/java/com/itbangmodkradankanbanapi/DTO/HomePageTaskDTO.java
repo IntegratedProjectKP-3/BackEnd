@@ -1,5 +1,6 @@
 package com.itbangmodkradankanbanapi.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.itbangmodkradankanbanapi.entities.Status;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class HomePageTaskDTO {
     private String title;
     @Column(name = "taskAssignees")
     private String assignees;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "status")
     private Status status;
