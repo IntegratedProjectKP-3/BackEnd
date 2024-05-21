@@ -37,11 +37,6 @@ public class TaskServices {
         return taskRepo.findById(Id).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId "+Id + " does not exist !!!"));
     }
 
-//    public Task addTask(Task task){
-//        return taskRepo.save(task);
-//    }
-
-
     @Transactional
     public TaskDTO3_V2 addTask(TaskDTO3_V2_addTask newTask){
         Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(()-> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
@@ -60,22 +55,6 @@ public class TaskServices {
             return false;
         }
     }
-
-
-//    public boolean updateTask(Task task){
-//        Task task1 = taskRepo.findById(task.getId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId "+task.getId() + " does not exist !!!"));
-//        task1.setTitle(task.getTitle());
-//        task1.setDescription(task.getDescription());
-//        task1.setAssignees(task.getAssignees());
-//        task1.setStatus(task.getStatus());
-//        if (task1.getUpdatedOn() == null){
-//            task1.setUpdatedOn(new Date());
-//        }else{
-//            task1.setUpdatedOn(task1.getUpdatedOn());
-//        }
-//        taskRepo.saveAndFlush(taskRepo.save(task1));
-//        return true;
-//    }
 
     @Transactional
     public TaskDTO2 updateTask(Integer id, TaskDTO2 taskDTO2) {

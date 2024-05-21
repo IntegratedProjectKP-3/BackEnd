@@ -36,8 +36,7 @@ public class StatusController {
         StatusDTO createdStatus = statusServices.addStatus(status);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStatus);
     }
-
-
+    
 
     @PutMapping("/{id}")
     public  ResponseEntity<StatusDTO> updateStatus(@PathVariable Integer id , @Valid @RequestBody StatusDTO status){
@@ -45,12 +44,6 @@ public class StatusController {
         return ResponseEntity.ok().body(updatedStatus);
     }
 
-//    @DeleteMapping("/{id}")
-//    public Status Delete(@PathVariable Integer id) {
-//        Status status = statusServices.findId(id);
-//        statusServices.deleteStatus(id);
-//        return status;
-//    }
 
     @DeleteMapping ("/{id}")
     public ResponseEntity<Object> deleteStatus(@PathVariable Integer id){

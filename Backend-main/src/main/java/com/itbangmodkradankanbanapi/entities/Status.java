@@ -16,22 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Status {
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Column(name = "statusId")
-////    @OneToMany(fetch = FetchType.EAGER,mappedBy = "task")
-//    private Integer statusId;
-//
-//    @NotBlank
-//    @Column(name = "statusName")
-//    private String statusName;
-//
-//    @Column(name = "statusDescription")
-//    private String statusDescription;
-//
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "status")
-//    private List<Task> taskList ;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -33,9 +33,6 @@ public class TaskDTO3_V2 {
             this.assignees = assignees.trim();
         }
 
-//        if(assignees.isEmpty()){
-//            this.assignees = null;
-//        }
     }
 
 
