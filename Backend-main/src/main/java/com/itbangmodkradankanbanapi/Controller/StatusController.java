@@ -13,7 +13,8 @@ import java.util.Optional;
 
 @RestController
 //@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
-@CrossOrigin(origins ="http://localhost:5173")
+//@CrossOrigin(origins ="http://localhost:5173")
+@CrossOrigin(origins = {"http://intproj23.sit.kmutt.ac.th","http://ip23kp3.sit.kmutt.ac.th:3000","http://localhost:5173"})
 @RequestMapping("/statuses")
 public class StatusController {
     @Autowired
