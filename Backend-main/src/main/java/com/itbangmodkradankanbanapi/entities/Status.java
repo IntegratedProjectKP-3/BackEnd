@@ -2,6 +2,8 @@ package com.itbangmodkradankanbanapi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -14,13 +16,21 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Status {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "statusId")
 //    @OneToMany(fetch = FetchType.EAGER,mappedBy = "task")
-    private Integer statusId;
-    @Column(name = "statusName")
-    private String statusName;
+    private Integer id;
+
+    @NotBlank
+    @Column(name = "statusName", length = 50)
+    private String name;
+
     @Column(name = "statusDescription")
-    private String statusDescription;
+    private String description;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "status")
+    private List<Task> taskList ;
 }

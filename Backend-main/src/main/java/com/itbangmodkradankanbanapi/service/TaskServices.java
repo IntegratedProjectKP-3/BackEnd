@@ -1,30 +1,34 @@
 package com.itbangmodkradankanbanapi.service;
 
 import com.itbangmodkradankanbanapi.DTO.HomePageTaskDTO;
+import com.itbangmodkradankanbanapi.DTO.TaskDTO2;
+import com.itbangmodkradankanbanapi.DTO.TaskDTO3_V2;
+import com.itbangmodkradankanbanapi.DTO.TaskDTO3_V2_addTask;
+import com.itbangmodkradankanbanapi.entities.Status;
 import com.itbangmodkradankanbanapi.entities.Task;
+import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
+import com.itbangmodkradankanbanapi.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.repositories.TaskRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskServices {
     @Autowired
     private TaskRepo taskRepo;
     @Autowired
-    ModelMapper modelMapper;
+    private StatusRepo statusRepo;
     @Autowired
-    ListMapper listMapper;
+    private ModelMapper modelMapper;
+    @Autowired
+    private ListMapper listMapper;
 
     public List<HomePageTaskDTO> getAllTask(){
         return listMapper.mapList(taskRepo.findAll(),HomePageTaskDTO.class,modelMapper);
@@ -32,6 +36,17 @@ public class TaskServices {
     public Task findId(Integer Id){
         return taskRepo.findById(Id).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId "+Id + " does not exist !!!"));
     }
+
+    @Transactional
+    public TaskDTO3_V2 addTask(TaskDTO3_V2_addTask newTask){
+        Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(()-> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
+        Task task = modelMapper.map(newTask, Task.class);
+        task.setStatus(statusObject);
+        Task savedTask = taskRepo.saveAndFlush(task);
+        return modelMapper.map(savedTask, TaskDTO3_V2.class);
+    }
+
+
     public boolean deleteTask(Integer Id){
         try {
             taskRepo.deleteById(Id);
@@ -40,21 +55,20 @@ public class TaskServices {
             return false;
         }
     }
-    public Task addTask(Task task){
-        return taskRepo.save(task);
+
+    @Transactional
+    public TaskDTO2 updateTask(Integer id, TaskDTO2 taskDTO2) {
+        Task existingTask = taskRepo.findById(id).orElseThrow(
+                () -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
+        existingTask.setDescription(taskDTO2.getDescription());
+        existingTask.setTitle(taskDTO2.getTitle());
+        existingTask.setAssignees(taskDTO2.getAssignees());
+        existingTask.setStatus(taskDTO2.getStatus());
+        Task savedTask = taskRepo.save(existingTask);
+        TaskDTO2 updateTaskDTO = modelMapper.map(savedTask, TaskDTO2.class);
+        updateTaskDTO.setDescription(null);
+        return  updateTaskDTO;
     }
-    public boolean updateTask(Task task){
-        Task task1 = taskRepo.findById(task.getId()).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId "+task.getId() + " does not exist !!!"));
-        task1.setTitle(task.getTitle());
-        task1.setDescription(task.getDescription());
-        task1.setAssignees(task.getAssignees());
-        task1.setStatus(task.getStatus());
-        if (task1.getUpdatedOn() == null){
-            task1.setUpdatedOn(new Date());
-        }else{
-            task1.setUpdatedOn(task1.getUpdatedOn());
-        }
-        taskRepo.saveAndFlush(taskRepo.save(task1));
-        return true;
-    }
+
+
 }
