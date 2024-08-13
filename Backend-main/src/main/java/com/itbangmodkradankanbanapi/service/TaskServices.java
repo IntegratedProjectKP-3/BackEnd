@@ -47,13 +47,22 @@ public class TaskServices {
     }
 
 
-    public boolean deleteTask(Integer Id){
-        try {
-            taskRepo.deleteById(Id);
-            return true;
-        }catch (EmptyResultDataAccessException e) {
-            return false;
-        }
+//    public boolean deleteTask(Integer Id){
+//        try {
+//            taskRepo.deleteById(Id);
+//            return true;
+//        }catch (EmptyResultDataAccessException e) {
+//            return false;
+//        }
+//    }
+
+    @Transactional
+    public TaskDTO2 deleteTask(int id){
+        Task task =  taskRepo.findById(id).orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
+        TaskDTO2 taskDTO = modelMapper.map(task, TaskDTO2.class);
+        taskRepo.delete(task);
+        taskDTO.setDescription(null);
+        return taskDTO;
     }
 
     @Transactional
