@@ -9,6 +9,7 @@ import lombok.Setter;
 
 @Data
 public class TaskDTO3_V2 {
+
     private Integer id;
     private String title;
     private String description;
