@@ -1,20 +1,16 @@
-package com.itbangmodkradankanbanapi.Controller;
+package com.itbangmodkradankanbanapi.database1.controller;
 
-import com.itbangmodkradankanbanapi.DTO.StatusDTO;
-import com.itbangmodkradankanbanapi.entities.Status;
-import com.itbangmodkradankanbanapi.repositories.StatusRepo;
-import com.itbangmodkradankanbanapi.service.StatusServices;
+import com.itbangmodkradankanbanapi.database1.DTO.StatusDTO;
+import com.itbangmodkradankanbanapi.database1.entities.Status;
+import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
+import com.itbangmodkradankanbanapi.database1.service.StatusServices;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 //@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")

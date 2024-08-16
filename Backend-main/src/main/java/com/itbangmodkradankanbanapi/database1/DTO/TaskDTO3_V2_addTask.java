@@ -1,25 +1,24 @@
-package com.itbangmodkradankanbanapi.DTO;
+package com.itbangmodkradankanbanapi.database1.DTO;
 
 
-import com.itbangmodkradankanbanapi.entities.Status;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-public class TaskDTO3_V2 {
-
+public class TaskDTO3_V2_addTask {
     private Integer id;
     private String title;
     private String description;
     private String assignees;
-    private Status status;
+    private Integer status;
 
 
     public void setDescription(String description) {
         if(description != null){
             this.description = description.trim();
+
+            if(description.isEmpty()){
+                this.description = null;
+            }
         }
     }
 
@@ -32,7 +31,12 @@ public class TaskDTO3_V2 {
     public void setAssignees(String assignees) {
         if(assignees != null){
             this.assignees = assignees.trim();
+
+            if(assignees.isEmpty()){
+                this.assignees = null;
+            }
         }
+
 
     }
 

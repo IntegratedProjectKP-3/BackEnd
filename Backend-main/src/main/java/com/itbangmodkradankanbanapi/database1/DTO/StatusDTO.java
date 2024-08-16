@@ -1,4 +1,4 @@
-package com.itbangmodkradankanbanapi.DTO;
+package com.itbangmodkradankanbanapi.database1.DTO;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;

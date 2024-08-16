@@ -1,7 +1,7 @@
-package com.itbangmodkradankanbanapi.DTO;
+package com.itbangmodkradankanbanapi.database1.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.itbangmodkradankanbanapi.entities.Status;
+import com.itbangmodkradankanbanapi.database1.entities.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 

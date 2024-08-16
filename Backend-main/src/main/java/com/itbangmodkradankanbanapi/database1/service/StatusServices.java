@@ -1,10 +1,10 @@
-package com.itbangmodkradankanbanapi.service;
+package com.itbangmodkradankanbanapi.database1.service;
 
-import com.itbangmodkradankanbanapi.DTO.StatusDTO;
-import com.itbangmodkradankanbanapi.entities.Status;
-import com.itbangmodkradankanbanapi.entities.Task;
+import com.itbangmodkradankanbanapi.database1.DTO.StatusDTO;
+import com.itbangmodkradankanbanapi.database1.entities.Status;
+import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
-import com.itbangmodkradankanbanapi.repositories.StatusRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.repositories.TaskRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

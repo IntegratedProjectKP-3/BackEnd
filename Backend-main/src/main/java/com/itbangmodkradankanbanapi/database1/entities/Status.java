@@ -1,4 +1,4 @@
-package com.itbangmodkradankanbanapi.entities;
+package com.itbangmodkradankanbanapi.database1.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
