@@ -1,4 +1,4 @@
-package com.itbangmodkradankanbanapi.repositories;
+package com.itbangmodkradankanbanapi.database1.repositories;
 
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import org.springframework.data.jpa.repository.JpaRepository;

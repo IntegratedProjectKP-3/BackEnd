@@ -10,6 +10,5 @@ public interface UserRepo extends JpaRepository<User, Integer> {
 
     Optional<User> findByUsername(String name);
 
-    @Override
     Optional<User> findById(Integer integer);
 }

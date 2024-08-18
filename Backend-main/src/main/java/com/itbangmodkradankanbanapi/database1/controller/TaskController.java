@@ -5,7 +5,7 @@ import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO2;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2_addTask;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
-import com.itbangmodkradankanbanapi.repositories.TaskRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
 import com.itbangmodkradankanbanapi.database1.service.ListMapper;
 import com.itbangmodkradankanbanapi.database1.service.TaskServices;
 import jakarta.validation.Valid;

@@ -5,7 +5,7 @@ import com.itbangmodkradankanbanapi.database1.entities.Status;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
-import com.itbangmodkradankanbanapi.repositories.TaskRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

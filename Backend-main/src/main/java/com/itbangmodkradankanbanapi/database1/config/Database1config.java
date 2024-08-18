@@ -19,17 +19,17 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "Database1EntityManagerFactory",
+@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory1",
         transactionManagerRef = "Database1TransactionManager",
         basePackages = {"com.itbangmodkradankanbanapi.database1.repositories"})
 
 public class Database1config {
-//    @Primary
-//    @Bean
-//    @ConfigurationProperties(prefix = "spring.datasource")
-//    public DataSourceProperties Database1DataSourceProperties() {
-//        return new DataSourceProperties();
-//    }
+    @Primary
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSourceProperties Database1DataSourceProperties() {
+        return new DataSourceProperties();
+    }
 
     @Primary
     @Bean
@@ -38,7 +38,7 @@ public class Database1config {
     }
 
     @Primary
-    @Bean (name="entityManagerFactory")
+    @Bean (name="entityManagerFactory1")
     public LocalContainerEntityManagerFactoryBean Database1EntityManagerFactory(@Qualifier("Database1DataSource") DataSource Database1DataSource, EntityManagerFactoryBuilder builder) {
         return builder.dataSource(Database1DataSource)
                 .packages("com.itbangmodkradankanbanapi.database1.entities")
@@ -48,7 +48,7 @@ public class Database1config {
 
     @Primary
     @Bean
-    public PlatformTransactionManager Database1TransactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory factory) {
+    public PlatformTransactionManager Database1TransactionManager(@Qualifier("entityManagerFactory1") EntityManagerFactory factory) {
         return new JpaTransactionManager(factory);
     }
 }

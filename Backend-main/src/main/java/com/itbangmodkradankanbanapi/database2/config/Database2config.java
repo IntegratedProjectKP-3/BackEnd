@@ -19,34 +19,34 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "Database2EntityManagerFactory",
+@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory2",
         transactionManagerRef = "Database2TransactionManager",
         basePackages = {"com.itbangmodkradankanbanapi.database2.repositories"})
 
 
 public class Database2config {
 
-//    @Primary
-//    @Bean
-//    @ConfigurationProperties(prefix = "spring.datasource")
-//    public DataSourceProperties Database2DataSourceProperties() {
-//        return new DataSourceProperties();
-//    }
+    @Primary
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSourceProperties Database2DataSourceProperties() {
+        return new DataSourceProperties();
+    }
 
     @Primary
     @Bean
     public DataSource Database2DataSource() {
         return DataSourceBuilder.create() .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared") .username("authuser") .password("VT4eTSRo") .build();
     }
-//
-//    @Primary
-//    @Bean (name="entityManagerFactory2")
-//    public LocalContainerEntityManagerFactoryBean Database2EntityManagerFactory(@Qualifier("Database2DataSource") DataSource Database1DataSource, EntityManagerFactoryBuilder builder) {
-//        return builder.dataSource(Database1DataSource)
-//                .packages("com.itbangmodkradankanbanapi.database2.entities")
-//                .persistenceUnit("Database2")
-//                .build();
-//    }
+
+    @Primary
+    @Bean (name="entityManagerFactory2")
+    public LocalContainerEntityManagerFactoryBean Database2EntityManagerFactory(@Qualifier("Database2DataSource") DataSource Database1DataSource, EntityManagerFactoryBuilder builder) {
+        return builder.dataSource(Database1DataSource)
+                .packages("com.itbangmodkradankanbanapi.database2.entities")
+                .persistenceUnit("Database2")
+                .build();
+    }
 
     @Primary
     @Bean
