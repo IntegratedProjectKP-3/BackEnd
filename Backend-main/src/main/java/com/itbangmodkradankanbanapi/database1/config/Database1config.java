@@ -19,36 +19,45 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory1",
+@EnableJpaRepositories(entityManagerFactoryRef = "Database1EntityManagerFactory",
         transactionManagerRef = "Database1TransactionManager",
         basePackages = {"com.itbangmodkradankanbanapi.database1.repositories"})
 
+
 public class Database1config {
-    @Primary
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSourceProperties Database1DataSourceProperties() {
-        return new DataSourceProperties();
-    }
+
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource")
+//    public DataSourceProperties Database1DataSourceProperties() {
+//        return new DataSourceProperties();
+//    }
 
     @Primary
-    @Bean
+    @Bean(name = "Database1DataSource")
     public DataSource Database1DataSource() {
-        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject_v2") .username("root") .password("mysql@sit") .build();
+        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject_v2") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
     }
 
     @Primary
-    @Bean (name="entityManagerFactory1")
-    public LocalContainerEntityManagerFactoryBean Database1EntityManagerFactory(@Qualifier("Database1DataSource") DataSource Database1DataSource, EntityManagerFactoryBuilder builder) {
-        return builder.dataSource(Database1DataSource)
+    @Bean (name="Database1EntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean Database1EntityManagerFactory(
+            @Qualifier("Database1DataSource") DataSource Database1DataSource,
+            EntityManagerFactoryBuilder builder) {
+        return builder
+                .dataSource(Database1DataSource)
                 .packages("com.itbangmodkradankanbanapi.database1.entities")
                 .persistenceUnit("Database1")
                 .build();
     }
 
     @Primary
-    @Bean
-    public PlatformTransactionManager Database1TransactionManager(@Qualifier("entityManagerFactory1") EntityManagerFactory factory) {
-        return new JpaTransactionManager(factory);
+    @Bean (name = "Database1TransactionManager")
+    public PlatformTransactionManager Database1TransactionManager(@Qualifier("Database1EntityManagerFactory") EntityManagerFactory Database1EntityManagerFactory) {
+        return new JpaTransactionManager(Database1EntityManagerFactory);
     }
+
+
+
+
+
 }

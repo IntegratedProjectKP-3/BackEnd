@@ -19,38 +19,47 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory2",
+@EnableJpaRepositories(entityManagerFactoryRef = "Database2EntityManagerFactory",
         transactionManagerRef = "Database2TransactionManager",
         basePackages = {"com.itbangmodkradankanbanapi.database2.repositories"})
 
 
 public class Database2config {
 
-    @Primary
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSourceProperties Database2DataSourceProperties() {
-        return new DataSourceProperties();
-    }
+//    @Primary
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource")
+//    public DataSourceProperties Database2DataSourceProperties() {
+//        return new DataSourceProperties();
+//    }
 
-    @Primary
-    @Bean
+//
+    @Bean(name = "Database2DataSource")
     public DataSource Database2DataSource() {
-        return DataSourceBuilder.create() .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared") .username("authuser") .password("VT4eTSRo") .build();
+        return DataSourceBuilder.create()
+                .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared")
+                .driverClassName("com.mysql.cj.jdbc.Driver")
+                .username("authuser")
+                .password("VT4eTSRo")
+                .build();
     }
 
-    @Primary
-    @Bean (name="entityManagerFactory2")
-    public LocalContainerEntityManagerFactoryBean Database2EntityManagerFactory(@Qualifier("Database2DataSource") DataSource Database1DataSource, EntityManagerFactoryBuilder builder) {
-        return builder.dataSource(Database1DataSource)
+
+    @Bean (name="Database2EntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean Database2EntityManagerFactory(
+            @Qualifier("Database2DataSource") DataSource Database2DataSource,
+            EntityManagerFactoryBuilder builder) {
+
+        return builder
+                .dataSource(Database2DataSource)
                 .packages("com.itbangmodkradankanbanapi.database2.entities")
                 .persistenceUnit("Database2")
                 .build();
     }
 
-    @Primary
-    @Bean
-    public PlatformTransactionManager Database2TransactionManager(@Qualifier("entityManagerFactory2") EntityManagerFactory factory) {
-        return new JpaTransactionManager(factory);
+
+    @Bean(name = "Database2TransactionManager")
+    public PlatformTransactionManager Database2TransactionManager(@Qualifier("Database2EntityManagerFactory") EntityManagerFactory Database2EntityManagerFactory) {
+        return new JpaTransactionManager(Database2EntityManagerFactory);
     }
 }
