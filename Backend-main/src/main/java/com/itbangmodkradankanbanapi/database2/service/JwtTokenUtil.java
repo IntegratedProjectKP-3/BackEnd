@@ -1,5 +1,6 @@
 package com.itbangmodkradankanbanapi.database2.service;
 
+import com.itbangmodkradankanbanapi.database2.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -35,7 +36,7 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public Claims getAllClaimsFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).build().parseClaimsJws(token).getBody();
         return claims;
     }
 
@@ -44,11 +45,12 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(User userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("info#1", "claim-objec 1");
-        claims.put("info#2", "claim-objec 2");
-        claims.put("info#3", "claim-objec 3");
+        claims.put("name", userDetails.getName());
+        claims.put("oid", userDetails.getOid());
+        claims.put("role", userDetails.getRole());
+        claims.put("email", userDetails.getEmail());
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
