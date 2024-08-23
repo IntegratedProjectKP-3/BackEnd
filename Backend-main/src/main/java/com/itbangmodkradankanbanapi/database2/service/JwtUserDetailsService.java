@@ -20,7 +20,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         User user = userRpository.findByUsername(userName);
         if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, userName + " does not exist !!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, " username and password is incorrect !!");
         }
 
         UserDetails userDetails = new AuthUser(userName, user.getPassword());
