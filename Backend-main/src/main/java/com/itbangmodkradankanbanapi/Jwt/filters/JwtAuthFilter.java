@@ -1,8 +1,9 @@
-package com.itbangmodkradankanbanapi.database2.filters;
+package com.itbangmodkradankanbanapi.Jwt.filters;
 
 import com.itbangmodkradankanbanapi.database2.service.JwtTokenUtil;
 import com.itbangmodkradankanbanapi.database2.service.JwtUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,13 +35,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
         if (requestTokenHeader != null) {
-            if (requestTokenHeader.startsWith("Bearer ")) {
+                if (requestTokenHeader.startsWith("Bearer ")) {
                 jwtToken = requestTokenHeader.substring(7);
                 try {
                     username = jwtTokenUtil.getUsernameFromToken(jwtToken);
-                } catch (IllegalArgumentException e) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-                } catch (ExpiredJwtException e) {
+                } catch (IllegalArgumentException | ExpiredJwtException e) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
                 }
             } else {

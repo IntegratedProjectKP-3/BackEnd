@@ -35,7 +35,7 @@ public class Database1config {
     @Primary
     @Bean(name = "Database1DataSource")
     public DataSource Database1DataSource() {
-        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject_v2") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
+        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
     }
 
     @Primary

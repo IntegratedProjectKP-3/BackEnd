@@ -1,4 +1,4 @@
-package com.itbangmodkradankanbanapi.database2.controller;
+package com.itbangmodkradankanbanapi.Jwt.filters;
 
 
 import com.itbangmodkradankanbanapi.database2.DTO.JwtRequestUser;
@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,7 +36,7 @@ public class AuthController {
     public ResponseEntity<Object> login(@RequestBody @Valid JwtRequestUser jwtRequestUser) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(jwtRequestUser.getUserName(), jwtRequestUser.getPassword());
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        if (!authentication.isAuthenticated()) {
+            if (!authentication.isAuthenticated()) {
             throw new UsernameNotFoundException("Invalid user or password");
         }
         User user = userRepo.findByUsername(jwtRequestUser.getUserName());
@@ -62,5 +61,9 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, "JWT Token does not begin with Bearer String");
         }
         return ResponseEntity.ok(claims);
+    }
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("ping");
     }
 }

@@ -1,6 +1,6 @@
 package com.itbangmodkradankanbanapi.database2.config;
 
-import com.itbangmodkradankanbanapi.database2.filters.JwtAuthFilter;
+import com.itbangmodkradankanbanapi.Jwt.filters.JwtAuthFilter;
 import com.itbangmodkradankanbanapi.database2.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -30,11 +30,10 @@ public class WebSecurityConfig {
         httpSecurity.csrf(csrf -> csrf.disable())
                 .authorizeRequests(
                         authorize -> authorize.requestMatchers("/authentications/login").permitAll()
-                                .requestMatchers("/authentications/validate-token").hasAnyAuthority("ADMIN")
-                                .requestMatchers("/api/offices/**").hasAnyAuthority("MANAGER","BA")
-                                .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(withDefaults());
+                                .requestMatchers("/authentications/validate-token").permitAll()
+//                                .anyRequest().authenticated())
+                ).httpBasic(withDefaults());
+                httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 

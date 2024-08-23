@@ -3,13 +3,9 @@ package com.itbangmodkradankanbanapi.database2.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Data
 @Entity
-@Table(name = "users")
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "users", schema = "itbkk_shared")
 public class User {
 
     @Id

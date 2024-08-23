@@ -1,6 +1,5 @@
 package com.itbangmodkradankanbanapi.database2.service;
 
-import com.itbangmodkradankanbanapi.database2.entities.User;
 import com.itbangmodkradankanbanapi.database2.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package com.itbangmodkradankanbanapi.database2.entities;
+package com.itbangmodkradankanbanapi.Jwt.filters;
 
 import lombok.Getter;
 import lombok.Setter;
