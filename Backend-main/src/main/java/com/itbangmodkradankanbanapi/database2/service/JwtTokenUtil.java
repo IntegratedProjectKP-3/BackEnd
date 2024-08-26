@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtTokenUtil implements Serializable {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
-    @Value("#{${jwt.max-token-interval-hour}*60*60*1000}")
+    @Value("#{${jwt.max-token-interval-min}*60*1000}")
     private long JWT_TOKEN_VALIDITY;
     SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
@@ -47,6 +47,7 @@ public class JwtTokenUtil implements Serializable {
 
     public String generateToken(User userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("iss", "http://intproj23.sit.kmutt.ac.th/kp3/");
         claims.put("name", userDetails.getName());
         claims.put("oid", userDetails.getOid());
         claims.put("role", userDetails.getRole());
