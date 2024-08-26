@@ -48,7 +48,7 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
 
-            System.out.println("tttt");
+//            System.out.println("tttt");
             if (!authentication.isAuthenticated()) {
                 throw new UsernameNotFoundException("user or password is incorrect");
             }
@@ -56,7 +56,7 @@ public class AuthController {
 //        User user= (User) authentication.getPrincipal();
 //        User user1 = userRepo.findByUsername(jwtRequestUser.getUserName());
             String token = jwtTokenUtil.generateToken(user);
-            System.out.println("ssadasd");
+//            System.out.println("ssadasd");
             return ResponseEntity.ok(new JwtResponse(token));
         }
         catch (Exception e) {
