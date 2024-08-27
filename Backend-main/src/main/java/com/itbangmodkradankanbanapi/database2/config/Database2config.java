@@ -36,19 +36,19 @@ public class Database2config {
 //
     @Bean(name = "Database2DataSource")
     public DataSource Database2DataSource() {
-//        return DataSourceBuilder.create()
-//                .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared")
-//                .driverClassName("com.mysql.cj.jdbc.Driver")
-//                .username("authuser")
-//                .password("VT4eTSRo")
-//                .build();
+       return DataSourceBuilder.create()
+               .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared")
+               .driverClassName("com.mysql.cj.jdbc.Driver")
+               .username("authuser")
+               .password("VT4eTSRo")
+               .build();
 
-        return DataSourceBuilder.create()
-                .url("jdbc:mysql://${MYSQL_HOST_2:ip23ft.sit.kmutt.ac.th}:3306/itbkk_shared")
-                .driverClassName("com.mysql.cj.jdbc.Driver")
-                .username("${MYSQL_USER_2:authuser}")
-                .password("${MYSQL_PASSWORD_2:VT4eTSRo}")
-                .build();
+        // return DataSourceBuilder.create()
+        //         .url("jdbc:mysql://${MYSQL_HOST_2:ip23ft.sit.kmutt.ac.th}:3306/itbkk_shared")
+        //         .driverClassName("com.mysql.cj.jdbc.Driver")
+        //         .username("${MYSQL_USER_2:authuser}")
+        //         .password("${MYSQL_PASSWORD_2:VT4eTSRo}")
+        //         .build();
     }
 
 
