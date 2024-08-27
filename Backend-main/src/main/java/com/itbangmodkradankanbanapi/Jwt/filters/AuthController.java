@@ -40,7 +40,7 @@ public class AuthController {
 //        if (user == null) {
 //            throw new ResponseStatusException(HttpStatus.BAD_REQUEST    , " username and password is incorrect !!");
 //        }
-        System.out.println("seeee");
+       // System.out.println("seeee");
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(jwtRequestUser.getUserName(), jwtRequestUser.getPassword());
         System.out.println(authenticationToken);
@@ -60,7 +60,7 @@ public class AuthController {
             return ResponseEntity.ok(new JwtResponse(token));
         }
         catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED    , " username and password is incorrect !!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED , "username and password is incorrect");
 //            System.out.println("asads");
         }
 //        return new ResponseEntity<>(new JwtResponse(null), HttpStatus.UNAUTHORIZED);
