@@ -32,21 +32,20 @@ public class Database1config {
 //        return new DataSourceProperties();
 //    }
 
-    @Primary
-    @Bean(name = "Database1DataSource")
-    public DataSource Database1DataSource() {
-//        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
-        // return DataSourceBuilder.create()
-        //         .url("jdbc:mysql://${MYSQL_HOST_1:localhost}:3306/integratedproject")
-        //         .username("${MYSQL_USER_1:root}") .password("${MYSQL_PASSWORD_1:mysql@sit}") 
-        //         .driverClassName("com.mysql.cj.jdbc.Driver")
-        //         .build();
-        return DataSourceBuilder.create()
-                .url("jdbc:mysql://${mysql_url:mysql}:3306/integratedproject")
-                .username("${mysql_user:root}") .password("${mysql_password:mysql@sit}") 
-                .driverClassName("com.mysql.cj.jdbc.Driver")
-                .build();
-    }
+@Primary
+@Bean(name = "Database1DataSource")
+public DataSource Database1DataSource(
+        @Value("${mysql_url:mysql}") String mysqlUrl,
+        @Value("${mysql_user:root}") String mysqlUser,
+        @Value("${mysql_password:mysql@sit}") String mysqlPassword) {
+    return DataSourceBuilder.create()
+            .url("jdbc:mysql://" + mysqlUrl + ":3306/integratedproject")
+            .username(mysqlUser)
+            .password(mysqlPassword)
+            .driverClassName("com.mysql.cj.jdbc.Driver")
+            .build();
+}
+
 
     @Primary
     @Bean (name="Database1EntityManagerFactory")

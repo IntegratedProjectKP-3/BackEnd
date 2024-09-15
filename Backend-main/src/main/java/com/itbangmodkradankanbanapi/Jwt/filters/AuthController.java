@@ -7,8 +7,11 @@ import com.itbangmodkradankanbanapi.database2.entities.User;
 import com.itbangmodkradankanbanapi.database2.repositories.UserRepo;
 import com.itbangmodkradankanbanapi.database2.service.JwtTokenUtil;
 import com.itbangmodkradankanbanapi.database2.service.JwtUserDetailsService;
+import com.itbangmodkradankanbanapi.exception.ErrorResponse;
+import com.itbangmodkradankanbanapi.exception.ItemNotFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,13 +19,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 @RestController
-@CrossOrigin(origins = {"http://intproj23.sit.kmutt.ac.th","http://ip23kp3.sit.kmutt.ac.th:3000","http://localhost:5173"})
+@CrossOrigin(origins = {"http://intproj23.sit.kmutt.ac.th","http://ip23kp3.sit.kmutt.ac.th:3000","http://localhost:5173","http://ip23kp3.sit.kmutt.ac.th:3000/kp3/api"})
 @RequestMapping("/auth")
 public class AuthController {
     @Autowired
@@ -37,33 +44,20 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody @Valid JwtRequestUser jwtRequestUser) {
         User user = userRepo.findByUsername(jwtRequestUser.getUserName());
-//        if (user == null) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST    , " username and password is incorrect !!");
-//        }
-       // System.out.println("seeee");
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(jwtRequestUser.getUserName(), jwtRequestUser.getPassword());
         System.out.println(authenticationToken);
         try {
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-
-//            System.out.println("tttt");
             if (!authentication.isAuthenticated()) {
                 throw new UsernameNotFoundException("user or password is incorrect");
             }
-//            if(!authentication.)
-//        User user= (User) authentication.getPrincipal();
-//        User user1 = userRepo.findByUsername(jwtRequestUser.getUserName());
             String token = jwtTokenUtil.generateToken(user);
-//            System.out.println("ssadasd");
             return ResponseEntity.ok(new JwtResponse(token));
         }
         catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED , "username and password is incorrect");
-//            System.out.println("asads");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-//        return new ResponseEntity<>(new JwtResponse(null), HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping("/validate-token")
@@ -87,5 +81,16 @@ public class AuthController {
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("ping");
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> AuthenticationException(ItemNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(Timestamp.from(Instant.now()), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> ResponseStatusException(HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(Timestamp.from(Instant.now()), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase(), "username and password is incorrect", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 }
