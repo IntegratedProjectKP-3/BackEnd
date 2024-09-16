@@ -38,10 +38,17 @@ public DataSource Database1DataSource(
         @Value("${mysql_url:mysql}") String mysqlUrl,
         @Value("${mysql_user:root}") String mysqlUser,
         @Value("${mysql_password:mysql@sit}") String mysqlPassword) {
+//    return DataSourceBuilder.create()
+//            .url("jdbc:mysql://" + mysqlUrl + ":3306/integratedproject")
+//            .username(mysqlUser)
+//            .password(mysqlPassword)
+//            .driverClassName("com.mysql.cj.jdbc.Driver")
+//            .build();
+
     return DataSourceBuilder.create()
-            .url("jdbc:mysql://" + mysqlUrl + ":3306/integratedproject")
-            .username(mysqlUser)
-            .password(mysqlPassword)
+            .url("jdbc:mysql://localhost:3306/integratedproject")
+            .username("root")
+            .password("mysql@sit")
             .driverClassName("com.mysql.cj.jdbc.Driver")
             .build();
 }
