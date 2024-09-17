@@ -33,7 +33,6 @@ public class WebSecurityConfig {
         httpSecurity.csrf(csrf -> csrf.disable())
                 .authorizeRequests(
                         authorize -> authorize.requestMatchers("/auth/login").permitAll()
-
                                 .anyRequest().authenticated())
                 .httpBasic(withDefaults())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) ->
