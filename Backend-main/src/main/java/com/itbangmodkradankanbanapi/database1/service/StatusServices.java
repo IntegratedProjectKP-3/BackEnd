@@ -42,7 +42,6 @@ public class StatusServices {
         if(!statusList.isEmpty()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not duplicate name");
         }
-
         Status status = modelMapper.map(newStatus, Status.class);
         status.setName(newStatus.getName().trim());
         Status updatedStatus = statusRepo.saveAndFlush(status);

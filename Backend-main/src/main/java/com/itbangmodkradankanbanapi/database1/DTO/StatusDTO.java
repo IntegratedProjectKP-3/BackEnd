@@ -1,14 +1,18 @@
 package com.itbangmodkradankanbanapi.database1.DTO;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.NonNull;
 
 @Data
 public class StatusDTO {
-
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "statusId")
         private Integer id;
 

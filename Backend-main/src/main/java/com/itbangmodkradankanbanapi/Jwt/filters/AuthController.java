@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -37,35 +38,21 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody @Valid JwtRequestUser jwtRequestUser) {
         User user = userRepo.findByUsername(jwtRequestUser.getUserName());
-//        if (user == null) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST    , " username and password is incorrect !!");
-//        }
-       // System.out.println("seeee");
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(jwtRequestUser.getUserName(), jwtRequestUser.getPassword());
         System.out.println(authenticationToken);
         try {
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-
-//            System.out.println("tttt");
             if (!authentication.isAuthenticated()) {
                 throw new UsernameNotFoundException("user or password is incorrect");
             }
-//            if(!authentication.)
-//        User user= (User) authentication.getPrincipal();
-//        User user1 = userRepo.findByUsername(jwtRequestUser.getUserName());
             String token = jwtTokenUtil.generateToken(user);
-//            System.out.println("ssadasd");
             return ResponseEntity.ok(new JwtResponse(token));
         }
         catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED , "username and password is incorrect");
-//            System.out.println("asads");
         }
-//        return new ResponseEntity<>(new JwtResponse(null), HttpStatus.UNAUTHORIZED);
     }
-
     @GetMapping("/validate-token")
         public ResponseEntity<Object> validateToken(@RequestHeader("Authorization") String requestTokenHeader) {
         Claims claims = null;
