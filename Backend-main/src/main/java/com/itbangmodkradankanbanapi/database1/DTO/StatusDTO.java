@@ -15,15 +15,11 @@ public class StatusDTO {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "statusId")
         private Integer id;
-
         @NotBlank
         @Column(name = "statusName")
         private String name;
-
         @Column(name = "statusDescription")
         private String description;
-
-
         public void setName(String name) {
                 this.name = name.trim();
         }

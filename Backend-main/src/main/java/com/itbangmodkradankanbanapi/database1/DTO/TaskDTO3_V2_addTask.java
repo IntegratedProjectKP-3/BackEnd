@@ -1,16 +1,22 @@
 package com.itbangmodkradankanbanapi.database1.DTO;
 
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
 public class TaskDTO3_V2_addTask {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String title;
     private String description;
     private String assignees;
-    private Integer status;
-
+//    private Integer status;
+        private Integer status;
 
     public void setDescription(String description) {
         if(description != null){

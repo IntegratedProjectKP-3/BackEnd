@@ -25,14 +25,14 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(Timestamp.from(Instant.now()), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-//            String fieldName = ((FieldError) error).getField();
-//            String errorMessage = error.getDefaultMessage();
-            errors.put("message","username and password is not null");
-        });
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+////            String fieldName = ((FieldError) error).getField();
+////            String errorMessage = error.getDefaultMessage();
+//            errors.put("message","username and password is not null");
+//        });
+//        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+//    }
 }

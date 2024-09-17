@@ -32,11 +32,11 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(csrf -> csrf.disable())
                 .authorizeRequests(
-                        authorize -> authorize.requestMatchers("/auth/login").permitAll()
-                                .anyRequest().authenticated())
-                .httpBasic(withDefaults())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) ->
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND)));
+                        authorize -> authorize.requestMatchers("/auth/login").permitAll())
+//                                        .anyRequest().authenticated())
+                .httpBasic(withDefaults());
+//                .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) ->
+//                        response.sendError(HttpServletResponse.SC_NOT_FOUND)));
                 httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }

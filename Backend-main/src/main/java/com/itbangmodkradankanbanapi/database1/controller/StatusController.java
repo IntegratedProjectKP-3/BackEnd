@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 //@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
@@ -33,7 +35,7 @@ public class StatusController {
         StatusDTO createdStatus = statusServices.addStatus(status);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStatus);
     }
-    
+
 
     @PutMapping("/{id}")
     public  ResponseEntity<StatusDTO> updateStatus(@PathVariable Integer id , @Valid @RequestBody StatusDTO status){
