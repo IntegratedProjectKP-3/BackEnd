@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "user")
 @Data
@@ -15,12 +17,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User {
     @Id
-    @Column(name = "userId", nullable = false)
-    private String userId;
+    @Column(name = "oid", nullable = false)
+    private String oid;
 
+    @Column(name = "name")
+    private String name;
 
-    @Column(name = "userName")
-    private String userName;
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "created_on" , insertable = false , updatable = false)
+    private Date created_on;
+    @Column(name = "updated_on", insertable = false , updatable = false)
+    private Date updated_on;
 
 
 }
