@@ -17,8 +17,6 @@ public class TaskDTO3_V2 {
     private String description;
     private String assignees;
     private Status status;
-
-
     public void setDescription(String description) {
         if(description != null){
             this.description = description.trim();

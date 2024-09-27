@@ -1,9 +1,11 @@
 package com.itbangmodkradankanbanapi.database2.service;
 
+import com.itbangmodkradankanbanapi.database1.entities.UserInfo;
 import com.itbangmodkradankanbanapi.database2.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -11,11 +13,13 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Component
 public class JwtTokenUtil implements Serializable {
+
     @Value("${jwt.secret}")
     private String SECRET_KEY;
     @Value("#{${jwt.max-token-interval-min}*60*1000}")
@@ -39,6 +43,7 @@ public class JwtTokenUtil implements Serializable {
         Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return claims;
     }
+
 
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);

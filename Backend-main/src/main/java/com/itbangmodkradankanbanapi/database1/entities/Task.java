@@ -22,10 +22,12 @@ public class Task {
     @Column(name = "taskAssignees")
     private String assignees;
 
-    @Column(name = "createdOn" , insertable = false , updatable = false)
+    @Column(name = "created_on" , insertable = false , updatable = false)
     private Date createdOn;
-    @Column(name = "updatedOn", insertable = false , updatable = false)
+    @Column(name = "updated_on", insertable = false , updatable = false)
     private Date updatedOn;
+    @Column(name = "board_Id")
+    private String boardId;
 
     @ManyToOne
     @JoinColumn(name = "taskStatus")
