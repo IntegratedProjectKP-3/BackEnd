@@ -1,10 +1,12 @@
 package com.itbangmodkradankanbanapi.database2.config;
 
 import com.itbangmodkradankanbanapi.Jwt.filters.JwtAuthFilter;
+import com.itbangmodkradankanbanapi.database2.service.JwtTokenUtil;
 import com.itbangmodkradankanbanapi.database2.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,14 +27,28 @@ public class WebSecurityConfig {
     JwtAuthFilter jwtAuthFilter;
     @Autowired
     JwtUserDetailsService jwtUserDetailsService;
+    @Autowired
+    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil; // ใช้สำหรับตรวจสอบ token
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf(csrf -> csrf.disable())
-                .authorizeRequests(
-                        authorize -> authorize.requestMatchers("/auth/login").permitAll()
-                                .anyRequest().authenticated()
-                ).httpBasic(withDefaults());
-                httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .authorizeRequests(authorize -> authorize
+                        .requestMatchers("/v3/boards/**").authenticated()
+                        .anyRequest().permitAll()
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint(customAuthenticationEntryPoint) // คืน 401 เมื่อ token ไม่ถูกต้อง
+                        .accessDeniedHandler(customAccessDeniedHandler)           // คืน 403 เมื่อไม่มีสิทธิ์
+                )
+                .httpBasic(withDefaults());
+        httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 

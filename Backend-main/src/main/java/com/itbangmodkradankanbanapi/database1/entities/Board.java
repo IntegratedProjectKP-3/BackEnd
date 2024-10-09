@@ -25,4 +25,6 @@ public class Board {
     private Date createdOn;
     @Column(name = "updated_on", insertable = false , updatable = false)
     private Date updatedOn;
+    @Column(name = "visibility")
+    private String visibility;
 }

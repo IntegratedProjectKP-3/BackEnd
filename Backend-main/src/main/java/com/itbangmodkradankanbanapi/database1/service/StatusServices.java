@@ -6,6 +6,7 @@ import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2_addTask;
 import com.itbangmodkradankanbanapi.database1.entities.Board;
 import com.itbangmodkradankanbanapi.database1.entities.Status;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
+import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
@@ -33,6 +34,9 @@ public class StatusServices {
     ModelMapper modelMapper;
     @Autowired
     ListMapper listMapper;
+    @Autowired
+    private BoardRepo boardRepo;
+
     public static <Z, X> List<X> mapList(List<Z> sourceList, Class<X> destinationType) {
         ModelMapper modelMapper = new ModelMapper();
         return sourceList.stream()
@@ -40,32 +44,32 @@ public class StatusServices {
                 .collect(Collectors.toList());
     }
 
-    public Status findId(Integer Id){
-        return statusRepo.findById(Id).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"status "+Id + " does not exist !!!"));
+    public Status findId(Integer Id) {
+        return statusRepo.findById(Id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "status " + Id + " does not exist !!!"));
     }
 
-    public List<StatusDTO> findPrivateTask(String token,String boardId) {
+    public Object findPrivateStatus(String token, String boardId) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (Objects.equals(board.getId(), boardId)) {
-               List<Status> status =  statusRepo.findAllByBoardId(boardId);
-               List<StatusDTO> statusDTOS = mapList(status,StatusDTO.class);
-               return statusDTOS;
-           }
+        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+            List<Status> status = statusRepo.findAllByBoardId(boardId);
+            return mapList(status, StatusDTO.class);
+        } else if (board1.getVisibility().equals("private")) {
+            return "403";
         }
-        return null;
+        return "error";
     }
-    public List<StatusDTO> getAllStatus(){
+
+    public List<StatusDTO> getAllStatus() {
         List<Status> status = statusRepo.findAll();
-        List<StatusDTO> statusDTOS = mapList(status,StatusDTO.class);
-        return statusDTOS;
+        return mapList(status, StatusDTO.class);
     }
 
     @Transactional
-    public StatusDTO addStatus(StatusDTO newStatus,String token,String boardId) {
+    public StatusDTO addStatus(StatusDTO newStatus, String token, String boardId) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (Objects.equals(board.getId(), boardId)) {
+        boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
                 List<Status> statusList = statusRepo.findAllByNameIgnoreCase(newStatus.getName());
                 if (!statusList.isEmpty()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not duplicate name");
@@ -75,18 +79,18 @@ public class StatusServices {
                 status.setBoardId(boardId);
                 Status updatedStatus = statusRepo.saveAndFlush(status);
                 return modelMapper.map(updatedStatus, StatusDTO.class);
-            }
         }
         return null;
     }
+
     @Transactional
-    public StatusDTO updateStatus(Integer id, StatusDTO status,String token,String boardId) {
+    public StatusDTO updateStatus(Integer id, StatusDTO status, String token, String boardId) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
         for (Board board : OwnBoard) {
             if (Objects.equals(board.getId(), boardId)) {
-                Status currentStatus = statusRepo.findById(id).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"status does not exist !!!"));
+                Status currentStatus = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "status does not exist !!!"));
                 currentStatus.setName(status.getName().trim());
-                if (status.getDescription()!= null){
+                if (status.getDescription() != null) {
                     currentStatus.setDescription(status.getDescription());
                 }
                 System.out.println("before save");
@@ -101,18 +105,23 @@ public class StatusServices {
     }
 
     @Transactional
-    public void deleteStatus(Integer id,String token,String boardId) {
+    public Object deleteStatus(Integer id, String token, String boardId) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (Objects.equals(board.getId(), boardId)) {
-                Status status = statusRepo.findById(id).orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
-                statusRepo.delete(status);
-            }
+        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+            Status status = statusRepo.findById(id).orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
+            statusRepo.delete(status);
+            return "deleted";
+        }else if(board1.getVisibility().equals("private")){
+        return "You do not have permission to delete";
+        } else{
+            return "error";
         }
     }
 
     @Transactional
-    public void deleteStatusAndTransfer(Integer id, Integer newId,String boardId,String token) {
+    public void deleteStatusAndTransfer(Integer id, Integer newId, String boardId, String token) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
         for (Board board : OwnBoard) {
             if (Objects.equals(board.getId(), boardId)) {
@@ -127,5 +136,18 @@ public class StatusServices {
                 statusRepo.delete(status);
             }
         }
+    }
+
+    @Transactional
+    public Object getStatusDetail(Integer id, String boardId, String token) {
+        List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
+        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+            return statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
+        } else if (!board1.getVisibility().equals("private") || OwnBoard.stream().noneMatch(board -> board.getId().equals(boardId))) {
+            return new ResponseStatusException(HttpStatus.FORBIDDEN, "403");
+        }
+        return null;
     }
 }
