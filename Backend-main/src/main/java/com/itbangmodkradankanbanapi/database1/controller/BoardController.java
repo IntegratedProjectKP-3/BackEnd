@@ -1,9 +1,6 @@
 package com.itbangmodkradankanbanapi.database1.controller;
 
-import com.itbangmodkradankanbanapi.database1.DTO.BoardDTO_AddBoard;
-import com.itbangmodkradankanbanapi.database1.DTO.HomePageTaskDTO;
-import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2;
-import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2_addTask;
+import com.itbangmodkradankanbanapi.database1.DTO.*;
 import com.itbangmodkradankanbanapi.database1.entities.Board;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
@@ -43,9 +40,14 @@ public class BoardController {
     private TaskRepo taskRepo;
 
     @GetMapping("/{boardId}")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getBoardDetail (@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token){
-        if (token == null || token.isEmpty()) {
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
         }
@@ -57,7 +59,7 @@ public class BoardController {
             }else if(newBoard.equals("bad request")){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(newBoard);
-            }else if(newBoard.equals("You do not have permission to change board visibility mode")){
+            }else if(newBoard.equals("403")){
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(newBoard);
             }else{
@@ -85,9 +87,15 @@ public class BoardController {
         }
     }
 
-    @GetMapping("/{id}/tasks")
-    public ResponseEntity<?> getPrivateTask(@PathVariable String id,@RequestHeader(value = "Authorization", required = false) String token)  {
-        Object task = boardAndTaskServices.getPrivateTask(id,token);
+    @GetMapping("/{boardId}/tasks")
+    public ResponseEntity<?> getPrivateTask(@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token)  {
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        Object task = boardAndTaskServices.getPrivateTask(boardId,token);
          if(task == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT FOUND");
@@ -101,28 +109,48 @@ public class BoardController {
         }
     }
     @PostMapping("/{boardId}/tasks")
-    public ResponseEntity<?> NewPrivateTask(@Valid @RequestBody TaskDTO3_V2_addTask taskDTO3V2, @PathVariable String boardId, @RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<?> NewPrivateTask(@Valid @RequestBody(required = false) TaskDTO3_V2_addTask taskDTO3V2,
+                                            @PathVariable String boardId,
+                                            @RequestHeader(value = "Authorization", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
-        }if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad Request: Invalid task data");
         }
         try {
-            TaskDTO3_V2 newTask = boardAndTaskServices.addPrivateTask(taskDTO3V2,boardId, token);
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }else
+        if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Bad Request: Invalid task data");
+        }
+        try {
+            TaskDTO3_V2 newTask = boardAndTaskServices.addPrivateTask(taskDTO3V2, boardId, token);
             if (newTask != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
-            }else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(newTask);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
     }
     @GetMapping("/{boardId}/tasks/{id}")
     public ResponseEntity<?> getTask(@PathVariable String boardId,@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token){
-        if (token == null || token.isEmpty()) {
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if ((token == null || token.isEmpty())&& !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
         }
@@ -141,11 +169,24 @@ public class BoardController {
         }
     }
     @PutMapping("/{boardId}/tasks/{id}")
-//    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updatePrivateTask(@Valid @RequestBody TaskDTO3_V2_addTask taskDTO3V2, @PathVariable String boardId,@PathVariable Integer id,@RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<?> updatePrivateTask(@Valid @RequestBody(required = false) TaskDTO3_V2_addTask taskDTO3V2, @PathVariable String boardId,@PathVariable Integer id,@RequestHeader(value = "Authorization", required = false) String token) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
+        }
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }else
+        if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Bad Request: Invalid task data");
         }
         try {
             TaskDTO3_V2 newTask = boardAndTaskServices.updatePrivateTask(taskDTO3V2,id,boardId,token);
@@ -160,6 +201,16 @@ public class BoardController {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
+        }
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
         }
         try {
             Object task = boardAndTaskServices.deletePrivateTask(taskId,boardId,token);
@@ -192,12 +243,25 @@ public class BoardController {
         return boardAndTaskServices.addPublicTask(taskDTO3V2AddTask);
     }
     @PatchMapping("/{boardId}")
-    public ResponseEntity<?> changeMode(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId){
+    public ResponseEntity<?> changeMode(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId,@RequestBody(required = false) VisibilityDTO visibility){
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
         }
-        Object board =boardAndTaskServices.TogglePrivateAndPublicBoard(boardId,token);
+        try {
+            boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("NOT_FOUND");
+        }
+        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }else if (visibility == null || visibility.getVisibility() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Bad Request: Invalid task data");
+        }
+        Object board =boardAndTaskServices.TogglePrivateAndPublicBoard(boardId,token,visibility);
         if(board.equals("You do not have permission to change board visibility mode")){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(board);
         }else if(board.equals("bad request") || board.equals("There is a problem. Please try again later")){

@@ -7,9 +7,7 @@ import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
-import com.itbangmodkradankanbanapi.database1.repositories.UserInfoRepo;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,18 +63,10 @@ public class    BoardAndTaskServices {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access: Token is required.");
         }
         List<Board> OwnBoard = showOwnBoard(token);
-        System.out.println("Board Id : " +  boardId);
         for (Board board : OwnBoard) {
-            System.out.println(board.getId());
             if(Objects.equals(board.getId(),boardId)){
-                System.out.println("Objects.equals(board.getId(),boardId)");
                 Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-                System.out.println("findById");
-                System.out.println(statusObject.getBoardId());
-                System.out.println(boardId);
-                System.out.println(Objects.equals(statusObject.getBoardId(),boardId));
                 if (Objects.equals(statusObject.getBoardId(),boardId)&& !Objects.equals(statusObject.getBoardId(), "public")){
-                    System.out.println("Objects.equals(statusObject.getBoardId(), boardId) && !Objects.equals(statusObject.getBoardId(), \"public\")");
                     Task task = modelMapper.map(newTask, Task.class);
                     task.setStatus(statusObject);
                     if(!Objects.equals(task.getBoardId(), "public")){
@@ -157,12 +147,15 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         return new ArrayList<>();
     }
     public Object getBoardDetail(String token,String boardId){
-        List<Board> OwnBoard = showOwnBoard(token);
         Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+        if(board1.getVisibility().equals("public")){
+            return boardRepo.findById(boardId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
+        }
+        List<Board> OwnBoard = showOwnBoard(token);
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
             return boardRepo.findById(boardId).orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
         }else if(board1.getVisibility().equals("private")){
-            return "You do not have permission to change board visibility mode";
+            return "403";
         }
         return "bad request";
     }
@@ -178,16 +171,17 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         return null;
     }
     @Transactional
-    public Object TogglePrivateAndPublicBoard(String boardId,String token){
+    public Object TogglePrivateAndPublicBoard(String boardId, String token, VisibilityDTO visibility){
         List<Board> OwnBoard = showOwnBoard(token);
         for (Board board : OwnBoard) {
             if (board.getId().equals(boardId)) {
                 Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-                if (board1.getVisibility().equals("private")) {
-                    board1.setVisibility("public");
-                }else if(board1.getVisibility().equals("public")) {
+                if (visibility.getVisibility().equalsIgnoreCase("private")) {
                     board1.setVisibility("private");
+                }else if(visibility.getVisibility().equalsIgnoreCase("public")) {
+                    board1.setVisibility("public");
                 }else{
+                    System.out.println("bad request");
                     return "bad request";
                 }
                 return boardRepo.save(board1);
@@ -201,13 +195,32 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         }
         return "There is a problem. Please try again later";
     }
-    public Object findByIdAndCheckVisibility(String boardId){
-        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if(board1.getVisibility().equals("private")){
-            return "private";
-        }else if(board1.getVisibility().equals("public")){
-            return "public";
+    public Boolean checkUsernameAndOwnerId(String token,String BoardId){
+        String name = userService.GetUserName(token);
+        Board Board = boardRepo.findById(BoardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        System.out.println(name);
+        System.out.println(Board.getOwnerId());
+        return Board.getOwnerId().equals(name);
+    }
+    public Boolean checkBoardPublicOrPrivate(String BoardId){
+        Board Board = boardRepo.findById(BoardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if(Board.getVisibility().equalsIgnoreCase("public")){
+            System.out.println(true);
+            return true;
+        }else if(Board.getVisibility().equalsIgnoreCase("private")){
+            System.out.println(false);
+            return false;
         }
+        System.out.println("null");
         return null;
     }
+//    public Object findByIdAndCheckVisibility(String boardId){
+//        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+//        if(board1.getVisibility().equals("private")){
+//            return "private";
+//        }else if(board1.getVisibility().equals("public")){
+//            return "public";
+//        }
+//        return null;
+//    }
 }
