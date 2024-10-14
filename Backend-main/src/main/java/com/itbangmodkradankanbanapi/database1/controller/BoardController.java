@@ -155,6 +155,7 @@ public class BoardController {
                     .body("Forbidden: No token provided.");
         }
         try {
+            System.out.println("boardAndTaskServices");
             Object newTask = boardAndTaskServices.getFullTask(id,boardId,token);
             if (newTask instanceof Task){
                 return ResponseEntity.status(HttpStatus.OK).body(newTask);
