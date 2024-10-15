@@ -23,7 +23,7 @@ import java.util.Objects;
 @RestController
 //@CrossOrigin(origins ="http://ip23kp3.sit.kmutt.ac.th:3000")
 //@CrossOrigin(origins ="http://localhost:5173")
-@CrossOrigin(origins = {"http://ip23kp3.sit.kmutt.ac.th","http://intproj23.sit.kmutt.ac.th","http://ip23kp3.sit.kmutt.ac.th:3000","http://localhost:5173"})
+@CrossOrigin(origins = {"http://ip23kp3.sit.kmutt.ac.th","http://intproj23.sit.kmutt.ac.th","http://ip23kp3.sit.kmutt.ac.th:3000","http://localhost:5173","https://ip23kp3.sit.kmutt.ac.th","https://intproj23.sit.kmutt.ac.th","https://ip23kp3.sit.kmutt.ac.th:3000"})
 @RequestMapping("/boards")
 public class BoardController {
     @Autowired
