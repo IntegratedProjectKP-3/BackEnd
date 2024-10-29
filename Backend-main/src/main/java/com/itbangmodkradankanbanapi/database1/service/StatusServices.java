@@ -49,7 +49,8 @@ public class StatusServices {
     }
 
     public Object findPrivateStatus(String token, String boardId) {
-        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         if (board1.getVisibility().equals("public")){
             List<Status> status = statusRepo.findAllByBoardId(boardId);
             return mapList(status, StatusDTO.class);

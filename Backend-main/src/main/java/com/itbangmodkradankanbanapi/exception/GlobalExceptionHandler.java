@@ -35,12 +35,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("{\"error\": \"An unexpected error occurred: " + ex.getMessage() + "\"}");
     }
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("{\"error\": \"JWT token has expired\"}");
-    }
 
+        @ExceptionHandler(ExpiredJwtException.class)
+        public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"error\": \"JWT token has expired\"}");
+        }
     @ExceptionHandler(SignatureException.class)
     public ResponseEntity<String> handleSignatureException(SignatureException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -55,7 +55,6 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 

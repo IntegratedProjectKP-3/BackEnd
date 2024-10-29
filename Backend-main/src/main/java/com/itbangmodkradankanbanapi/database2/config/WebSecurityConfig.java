@@ -32,9 +32,8 @@ public class WebSecurityConfig {
 
     @Autowired
     private CustomAccessDeniedHandler customAccessDeniedHandler;
-
     @Autowired
-    private JwtTokenUtil jwtTokenUtil; // ใช้สำหรับตรวจสอบ token
+    private JwtTokenUtil jwtTokenUtil;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -44,8 +43,8 @@ public class WebSecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(customAuthenticationEntryPoint) // คืน 401 เมื่อ token ไม่ถูกต้อง
-                        .accessDeniedHandler(customAccessDeniedHandler)           // คืน 403 เมื่อไม่มีสิทธิ์
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .httpBasic(withDefaults());
         httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

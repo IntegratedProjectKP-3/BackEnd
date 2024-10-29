@@ -3,6 +3,7 @@ package com.itbangmodkradankanbanapi.Jwt.filters;
 
 import com.itbangmodkradankanbanapi.database2.DTO.JwtRequestUser;
 import com.itbangmodkradankanbanapi.database2.DTO.JwtResponse;
+import com.itbangmodkradankanbanapi.database2.DTO.JwtResponseWithoutRefreshToken;
 import com.itbangmodkradankanbanapi.database2.entities.User;
 import com.itbangmodkradankanbanapi.database2.repositories.UserRepo;
 import com.itbangmodkradankanbanapi.database2.service.JwtTokenUtil;
@@ -44,14 +45,35 @@ public class AuthController {
             if (!authentication.isAuthenticated()) {
                 throw new UsernameNotFoundException("user or password is incorrect");
             }
-            String token = jwtTokenUtil.generateToken(user);
-
-            return ResponseEntity.ok(new JwtResponse(token));
+            String token = jwtTokenUtil.generateToken(user,"token");
+            String refreshToken = jwtTokenUtil.generateToken(user,"refresh_token");
+            return ResponseEntity.ok(new JwtResponse(token,refreshToken));
         }
         catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED , "username and password is incorrect");
         }
     }
+
+    @PostMapping("/token")
+    public ResponseEntity<Object> token( @RequestHeader(value = "Authorization", required = false) String token) {
+        try{
+            String trimToken = token.substring(7);
+            String username = jwtTokenUtil.getUsernameFromToken(trimToken);
+            User user = userRepo.findByUsername(username);
+            UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
+            if (jwtTokenUtil.validateToken(trimToken, userDetails)) {
+            String accessToken = jwtTokenUtil.generateToken(user,"token");
+            return ResponseEntity.ok(new JwtResponseWithoutRefreshToken(accessToken));
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("expire or invalid refresh token");
+        } catch (ExpiredJwtException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT token has expired or invalid");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        }
+    }
+
 
     @GetMapping("/validate-token")
         public ResponseEntity<Object> validateToken(@RequestHeader("Authorization") String requestTokenHeader) {
