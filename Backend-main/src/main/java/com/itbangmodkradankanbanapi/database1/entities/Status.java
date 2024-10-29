@@ -23,7 +23,6 @@ public class Status {
     @Column(name = "statusId")
 //    @OneToMany(fetch = FetchType.EAGER,mappedBy = "task")
     private Integer id;
-
     @NotBlank
     @Column(name = "statusName", length = 50)
     private String name;

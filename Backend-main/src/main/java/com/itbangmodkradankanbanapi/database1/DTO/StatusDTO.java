@@ -23,11 +23,9 @@ public class StatusDTO {
         public void setName(String name) {
                 this.name = name.trim();
         }
-
         public void setDescription(String description) {
                 if(description != null){
                         this.description = description.trim();
                 }
-
         }
 }
