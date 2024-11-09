@@ -33,15 +33,15 @@ public class Database2config {
 //        return new DataSourceProperties();
 //    }
 
-//
-    @Bean(name = "Database2DataSource")
+
+    @Bean(name = "Database2DataSource") // use for both local and Virtual Machine
     public DataSource Database2DataSource() {
-       return DataSourceBuilder.create()
-               .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared")
-               .driverClassName("com.mysql.cj.jdbc.Driver")
-               .username("authuser")
-               .password("VT4eTSRo")
-               .build();
+        return DataSourceBuilder.create()
+                .url("jdbc:mysql://ip23ft.sit.kmutt.ac.th:3306/itbkk_shared")
+                .driverClassName("com.mysql.cj.jdbc.Driver")
+                .username("authuser")
+                .password("VT4eTSRo")
+                .build();
     }
 
 
