@@ -4,9 +4,11 @@ import com.itbangmodkradankanbanapi.database1.DTO.StatusDTO;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2_addTask;
 import com.itbangmodkradankanbanapi.database1.entities.Board;
+import com.itbangmodkradankanbanapi.database1.entities.Invite;
 import com.itbangmodkradankanbanapi.database1.entities.Status;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.InviteRepo;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
@@ -35,8 +37,13 @@ public class StatusServices {
     @Autowired
     ListMapper listMapper;
     @Autowired
+    private UserService userService;
+    @Autowired
     private BoardRepo boardRepo;
-
+    @Autowired
+    private InviteService inviteService;
+    @Autowired
+    private InviteRepo inviteRepo;
     public static <Z, X> List<X> mapList(List<Z> sourceList, Class<X> destinationType) {
         ModelMapper modelMapper = new ModelMapper();
         return sourceList.stream()
@@ -51,7 +58,9 @@ public class StatusServices {
     public Object findPrivateStatus(String token, String boardId) {
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (board1.getVisibility().equals("public")){
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (board1.getVisibility().equals("public") || invite.getAccess() != null){
             List<Status> status = statusRepo.findAllByBoardId(boardId);
             return mapList(status, StatusDTO.class);
         }
@@ -72,9 +81,10 @@ public class StatusServices {
 
     @Transactional
     public StatusDTO addStatus(StatusDTO newStatus, String token, String boardId) {
-        List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
         boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
+        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId) || invite.getAccess().equalsIgnoreCase("write"))) {
                 List<Status> statusList = statusRepo.findAllByNameIgnoreCase(newStatus.getName());
                 if (!statusList.isEmpty()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not duplicate name");
@@ -90,9 +100,10 @@ public class StatusServices {
 
     @Transactional
     public StatusDTO updateStatus(Integer id, StatusDTO status, String token, String boardId) {
-        List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (Objects.equals(board.getId(), boardId)) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId) || invite.getAccess().equalsIgnoreCase("write"))) {
                 Status currentStatus = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "status does not exist !!!"));
                 currentStatus.setName(status.getName().trim());
                 if (status.getDescription() != null) {
@@ -101,7 +112,6 @@ public class StatusServices {
                 statusRepo.saveAndFlush(currentStatus);
                 return modelMapper.map(currentStatus, StatusDTO.class);
             }
-        }
         return null;
     }
 
@@ -110,7 +120,9 @@ public class StatusServices {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
         Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || invite.getAccess().equalsIgnoreCase("write")) {
             Status status = statusRepo.findById(id).orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
             statusRepo.delete(status);
             return "deleted";
@@ -123,8 +135,9 @@ public class StatusServices {
     @Transactional
     public void deleteStatusAndTransfer(Integer id, Integer newId, String boardId, String token) {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (Objects.equals(board.getId(), boardId)) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || invite.getAccess().equalsIgnoreCase("write")) {
                 Status status = statusRepo.findById(id)
                         .orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
                 Status transferStatus = statusRepo.findById(newId)
@@ -134,7 +147,6 @@ public class StatusServices {
                 taskV2s.forEach(task -> task.setStatus(transferStatus));
                 taskRepo.saveAll(taskV2s);
                 statusRepo.delete(status);
-            }
         }
     }
     @Transactional
@@ -146,7 +158,10 @@ public class StatusServices {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
         }
         List<Board> ownBoard = boardAndTaskServices.showOwnBoard(token);
-        if (ownBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (invite.getAccess() != null ||board1.getVisibility().equals("public") ||
+                ownBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
             return statusRepo.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
         }

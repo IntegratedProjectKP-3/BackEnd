@@ -2,12 +2,17 @@ package com.itbangmodkradankanbanapi.database1.service;
 
 import com.itbangmodkradankanbanapi.database1.DTO.*;
 import com.itbangmodkradankanbanapi.database1.entities.Board;
+import com.itbangmodkradankanbanapi.database1.entities.Invite;
 import com.itbangmodkradankanbanapi.database1.entities.Status;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.InviteRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
+import com.itbangmodkradankanbanapi.database2.entities.User;
+import com.itbangmodkradankanbanapi.database2.repositories.UserRepo;
 import com.itbangmodkradankanbanapi.exception.ItemNotFoundForUpdateAndDelete;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +36,10 @@ public class    BoardAndTaskServices {
     private ModelMapper modelMapper;
     @Autowired
     private ListMapper listMapper;
+    @Autowired
+    private InviteRepo inviteRepo;
+    @Autowired
+    private UserRepo userRepo;
     public Object getPrivateTask(String BoardId,String token){
         Board board1 = boardRepo.findById(BoardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
@@ -46,8 +55,8 @@ public class    BoardAndTaskServices {
             }
             return null;
         }
-        List<Board> OwnBoard = showOwnBoard(token);
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(BoardId)) || board1.getVisibility().equals("public")) {
+        String name = userService.GetUserName(token);
+        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(BoardId))|| inviteRepo.findByName(name) != null || board1.getVisibility().equals("public")) {
             if (taskRepo.findAllByBoardId(BoardId) == null || taskRepo.findAllByBoardId(BoardId).isEmpty()){
                 return new ArrayList<>();
             }
@@ -63,9 +72,10 @@ public class    BoardAndTaskServices {
         if (newTask == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access: Token is required.");
         }
-        List<Board> OwnBoard = showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if(Objects.equals(board.getId(),boardId)){
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+                ||(invite.getAccess().equalsIgnoreCase("write"))) {
                 Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
                 if (Objects.equals(statusObject.getBoardId(),boardId)&&
@@ -79,26 +89,15 @@ public class    BoardAndTaskServices {
                     return modelMapper.map(task, TaskDTO3_V2.class);
                 }
             }
-        }
-        return null;
-    }
-    public TaskDTO3_V2  addPublicTask(TaskDTO3_V2_addTask newTask){
-        Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(()->
-                new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
-        if (Objects.equals(statusObject.getBoardId(), "public")){
-            Task task = modelMapper.map(newTask, Task.class);
-            task.setStatus(statusObject);
-            task.setBoardId("public");
-            taskRepo.save(task);
-            return modelMapper.map(task, TaskDTO3_V2.class);
-        }
         return null;
     }
     public TaskDTO3_V2  updatePrivateTask(TaskDTO3_V2_addTask newTask,Integer TaskId,String boardId,String token) {
-        List<Board> OwnBoard = showOwnBoard(token);
         boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+                ||(invite.getAccess().equalsIgnoreCase("write"))) {
             Task existingTask = taskRepo.findById(TaskId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "TaskId does not exist !!!"));
         existingTask.setDescription(newTask.getDescription());
@@ -114,10 +113,12 @@ public class    BoardAndTaskServices {
         return null;
         }
 public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
-    List<Board> OwnBoard = showOwnBoard(token);
     Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-    if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+    String name = userService.GetUserName(token);
+    Invite invite = inviteRepo.findByName(name);
+    if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+            ||(invite.getAccess().equalsIgnoreCase("write"))) {
             Task task =  taskRepo.findById(TaskId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "TaskId does not exist !!!"));
             TaskDTO3_V2 taskDTO = modelMapper.map(task, TaskDTO3_V2.class);
@@ -153,6 +154,26 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         boardRepo.save(newBoard);
         return newBoard;
     }
+    public AccessBoard accessBoard(String token) {
+        String name = userService.GetUserName(token);
+        String id = userService.getUserId(token);
+        List<Board> board =  boardRepo.findAllByOwnerId(name);
+        System.out.println(board);
+        List<Invite> invite = inviteRepo.findAllByOid(id);
+        for (Invite invite1 : invite){
+            Board board1 = boardRepo.findById(invite1.getBoardId()).orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+            board.add(board1);
+        }
+        AccessBoard accessBoard = new AccessBoard();
+        accessBoard.setBoards(board);
+        accessBoard.setCollab(invite);
+        if (accessBoard.getBoards() != null && !accessBoard.getBoards().isEmpty()){
+            return accessBoard;
+        }
+        return accessBoard;
+    }
+
     public List<Board> showOwnBoard(String token) {
         String name = userService.GetUserName(token);
         List<Board> board =  boardRepo.findAllByOwnerId(name);
@@ -162,10 +183,13 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         }
         return new ArrayList<>();
     }
+
     public Object getBoardDetail(String token,String boardId){
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if(board1.getVisibility().equals("public")){
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if(board1.getVisibility().equals("public") || invite.getAccess() != null){
             return boardRepo.findById(boardId).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
         }
@@ -187,7 +211,10 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         }else{
         List<Board> OwnBoard = showOwnBoard(token);
         System.out.println(boardId);
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || board1.getVisibility().equals("public")) {
+            String name = userService.GetUserName(token);
+            Invite invite = inviteRepo.findByName(name);
+            if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))
+                    || invite.getAccess() != null || board1.getVisibility().equals("public")) {
             System.out.println("id : " + id);
                 return taskRepo.findById(id).orElseThrow(()->
                         new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
@@ -196,13 +223,14 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         }
         System.out.println("null");
         return null;
-    }
         }
+    }
     @Transactional
     public Object TogglePrivateAndPublicBoard(String boardId, String token, VisibilityDTO visibility){
-        List<Board> OwnBoard = showOwnBoard(token);
-        for (Board board : OwnBoard) {
-            if (board.getId().equals(boardId)) {
+        String name = userService.GetUserName(token);
+        Invite invite = inviteRepo.findByName(name);
+        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+                ||(invite.getAccess().equalsIgnoreCase("write"))) {
                 Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
                 if (visibility.getVisibility().equalsIgnoreCase("private")) {
@@ -215,7 +243,6 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
                 }
                 return boardRepo.save(board1);
             }
-        }
         List<Board> boards = boardRepo.findAll();
         for (Board board : boards){
             if (boardId.equals(board.getId())){
@@ -236,22 +263,11 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         Board Board = boardRepo.findById(BoardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         if(Board.getVisibility().equalsIgnoreCase("public")){
-            System.out.println(true);
             return true;
         }else if(Board.getVisibility().equalsIgnoreCase("private")){
-            System.out.println(false);
             return false;
         }
         System.out.println("null");
         return null;
     }
-//    public Object findByIdAndCheckVisibility(String boardId){
-//        Board board1 = boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-//        if(board1.getVisibility().equals("private")){
-//            return "private";
-//        }else if(board1.getVisibility().equals("public")){
-//            return "public";
-//        }
-//        return null;
-//    }
 }

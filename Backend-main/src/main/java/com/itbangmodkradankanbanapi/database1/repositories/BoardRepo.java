@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface BoardRepo extends JpaRepository<Board, String> {
     List<Board> findAllByOwnerId(String name);
+    Board findByOwnerIdAndId(String ownerId, String boardId);
 }

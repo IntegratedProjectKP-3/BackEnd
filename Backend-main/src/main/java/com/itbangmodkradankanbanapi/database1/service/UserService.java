@@ -31,9 +31,21 @@ public class UserService {
     }
     public String GetUserName(String token){
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // ตัด "Bearer " ออกไป
+            token = token.substring(7);
         }
         String name = (String) jwtTokenUtil.getAllClaimsFromToken(token).get("name");
         return name;
+    }
+    public String getUserEmail(String token){
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        return (String) jwtTokenUtil.getAllClaimsFromToken(token).get("email");
+    }
+    public String getUserId(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        return (String) jwtTokenUtil.getAllClaimsFromToken(token).get("oid");
     }
 }

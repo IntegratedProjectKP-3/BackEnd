@@ -2,12 +2,16 @@ package com.itbangmodkradankanbanapi.database1.controller;
 
 import com.itbangmodkradankanbanapi.database1.DTO.*;
 import com.itbangmodkradankanbanapi.database1.entities.Board;
+import com.itbangmodkradankanbanapi.database1.entities.Invite;
 import com.itbangmodkradankanbanapi.database1.entities.Task;
 import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.InviteRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.TaskRepo;
+import com.itbangmodkradankanbanapi.database1.service.InviteService;
 import com.itbangmodkradankanbanapi.database1.service.ListMapper;
 import com.itbangmodkradankanbanapi.database1.service.BoardAndTaskServices;
 import com.itbangmodkradankanbanapi.database1.service.UserService;
+import com.itbangmodkradankanbanapi.database2.entities.User;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +43,10 @@ public class BoardController {
     private BoardRepo boardRepo;
     @Autowired
     private TaskRepo taskRepo;
+    @Autowired
+    private InviteService inviteService;
+    @Autowired
+    private InviteRepo inviteRepo;
 
     @GetMapping("/{boardId}")
     public ResponseEntity<?> getBoardDetail (@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token){
@@ -50,6 +59,10 @@ public class BoardController {
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
+        }
+        else if(inviteService.listAllCollab(token,boardId).equals("403")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("403");
         }
         try {
             Object newBoard = boardAndTaskServices.getBoardDetail(token, boardId);
@@ -122,11 +135,21 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
-        }else
-        if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+        }
+        assert myInvite != null;
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Bad Request: Invalid task data");
         }
@@ -153,6 +176,10 @@ public class BoardController {
         if ((token == null || token.isEmpty())&& !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
+        }
+        else if(inviteService.listAllCollab(token,boardId).equals("403")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("403");
         }
         try {
             System.out.println("boardAndTaskServices");
@@ -181,11 +208,21 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
-        }else
-        if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+        }
+        assert myInvite != null;
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }        else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Bad Request: Invalid task data");
         }
@@ -209,10 +246,16 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+        String oid = userService.getUserId(token);
+        Invite invite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        if (invite == null && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
+//        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body("FORBIDDEN");
+//        }
         try {
             Object task = boardAndTaskServices.deletePrivateTask(taskId,boardId,token);
             if (task instanceof TaskDTO3_V2){
@@ -231,18 +274,15 @@ public class BoardController {
     }
 // show own board
     @GetMapping
-    public List<Board> getBoard(@RequestHeader(value = "Authorization", required = false) String token){
-        return boardAndTaskServices.showOwnBoard(token);
+    public AccessBoard getBoard(@RequestHeader(value = "Authorization", required = false) String token){
+        return boardAndTaskServices.accessBoard(token);
     }
 // show all public task
     @GetMapping("/public/tasks")
     public List<HomePageTaskDTO> getPublicTask(){
         return boardAndTaskServices.getPublicTask();
     }
-    @PostMapping("/public/tasks/add")
-    public TaskDTO3_V2 addPublicTask(@Valid @RequestBody TaskDTO3_V2_addTask taskDTO3V2AddTask){
-        return boardAndTaskServices.addPublicTask(taskDTO3V2AddTask);
-    }
+
     @PatchMapping("/{boardId}")
     public ResponseEntity<?> changeMode(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId,@RequestBody(required = false) VisibilityDTO visibility){
         if (token == null || token.isEmpty()) {

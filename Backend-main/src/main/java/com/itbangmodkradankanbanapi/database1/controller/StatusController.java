@@ -3,10 +3,16 @@ package com.itbangmodkradankanbanapi.database1.controller;
 import com.itbangmodkradankanbanapi.database1.DTO.StatusDTO;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2;
 import com.itbangmodkradankanbanapi.database1.DTO.TaskDTO3_V2_addTask;
+import com.itbangmodkradankanbanapi.database1.entities.Board;
+import com.itbangmodkradankanbanapi.database1.entities.Invite;
 import com.itbangmodkradankanbanapi.database1.entities.Status;
+import com.itbangmodkradankanbanapi.database1.repositories.BoardRepo;
+import com.itbangmodkradankanbanapi.database1.repositories.InviteRepo;
 import com.itbangmodkradankanbanapi.database1.repositories.StatusRepo;
 import com.itbangmodkradankanbanapi.database1.service.BoardAndTaskServices;
+import com.itbangmodkradankanbanapi.database1.service.InviteService;
 import com.itbangmodkradankanbanapi.database1.service.StatusServices;
+import com.itbangmodkradankanbanapi.database1.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,11 +36,18 @@ public class StatusController {
     private StatusServices statusServices;
     @Autowired
     private BoardAndTaskServices boardAndTaskServices;
+    @Autowired
+    private InviteService inviteService;
+    @Autowired
+    private InviteRepo inviteRepo;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private BoardRepo boardRepo;
     @GetMapping("/statuses")
     public List<StatusDTO> getAllStatus() {
         return statusServices.getAllStatus();
     }
-
     @GetMapping("/{boardId}/statuses")
     public ResponseEntity<?> getAllPrivateStatus(@PathVariable String boardId, @RequestHeader(value = "Authorization", required = false) String token) {
         try {
@@ -46,7 +59,11 @@ public class StatusController {
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
+        }else if(inviteService.listAllCollab(token,boardId).equals("403")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("403");
         }
+
         Object newTask = statusServices.findPrivateStatus(token, boardId);
         if (newTask instanceof List<?>) {
             return ResponseEntity.status(HttpStatus.OK).body(newTask);
@@ -70,10 +87,22 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
-        }else if (token == null || token.isEmpty()) {
+        }
+        assert myInvite != null;
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }
+        else if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
         }else if(status == null){
@@ -99,11 +128,22 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
-        }else
-        if (statusDTO == null || !isValid(statusDTO)) {
+        }
+        assert myInvite != null;
+
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        } else if (statusDTO == null || !isValid(statusDTO)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Bad Request: Invalid task data");
         }
@@ -126,11 +166,21 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)) {
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        try{
+        assert myInvite != null;
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }        try{
             Object status = statusServices.deleteStatus(id, token, boardId);
             if(status.equals("deleted")){
                 return ResponseEntity.ok().body(new HashMap<>());
@@ -155,6 +205,20 @@ public class StatusController {
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
+        }        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+            System.out.println("if  myInvite null or not my board");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
+        }
+        assert myInvite != null;
+        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("FORBIDDEN");
         }
         statusServices.deleteStatusAndTransfer(id, newId, boardId, token);
         return ResponseEntity.ok().body(new HashMap<>());
@@ -170,7 +234,11 @@ public class StatusController {
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
+        }else if(inviteService.listAllCollab(token,boardId).equals("403")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("403");
         }
+
         try {
             Object statusDetail = statusServices.getStatusDetail(id, boardId, token);
             if (statusDetail.equals("403")){
