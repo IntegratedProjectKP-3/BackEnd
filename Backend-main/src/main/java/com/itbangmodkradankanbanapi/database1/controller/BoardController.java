@@ -131,39 +131,42 @@ public class BoardController {
         }
         try {
             boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
         String oid = userService.getUserId(token);
-        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
         String username = userService.GetUserName(token);
         Board board = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)) {
             System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        assert myInvite != null;
-        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("FORBIDDEN");
-        }else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Bad Request: Invalid task data");
-        }
-        try {
-            TaskDTO3_V2 newTask = boardAndTaskServices.addPrivateTask(taskDTO3V2, boardId, token);
-            if (newTask != null) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(newTask);
+        if (myInvite != null || board.getOwnerId().equals(username)) {
+            if (!board.getOwnerId().equals(username)&& !boardAndTaskServices.checkBoardPublicOrPrivate(boardId) && myInvite.getAccess().equalsIgnoreCase("read")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("FORBIDDEN");
+            } else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Bad Request: Invalid task data");
             }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(e.getMessage());
+            try {
+                TaskDTO3_V2 newTask = boardAndTaskServices.addPrivateTask(taskDTO3V2, boardId, token);
+                if (newTask != null) {
+                    return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(newTask);
+                }
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(e.getMessage());
+            }
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("500");
     }
     @GetMapping("/{boardId}/tasks/{id}")
     public ResponseEntity<?> getTask(@PathVariable String boardId,@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token){
@@ -204,74 +207,85 @@ public class BoardController {
         }
         try {
             boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
         String oid = userService.getUserId(token);
-        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId,oid);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
         String username = userService.GetUserName(token);
         Board board = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)){
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)) {
             System.out.println("if  myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        assert myInvite != null;
-        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("FORBIDDEN");
-        }        else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Bad Request: Invalid task data");
+        if (myInvite != null || board.getOwnerId().equals(username)) {
+            if (!board.getOwnerId().equals(username) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId) && myInvite.getAccess().equalsIgnoreCase("read")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("FORBIDDEN");
+            } else if (taskDTO3V2 == null || !isValid(taskDTO3V2)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Bad Request: Invalid task data");
+            }
+            try {
+                TaskDTO3_V2 newTask = boardAndTaskServices.updatePrivateTask(taskDTO3V2, id, boardId, token);
+                return ResponseEntity.status(HttpStatus.OK).body(newTask);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("{\"error\": \"Unable to create board: " + e.getMessage() + "\"}");
+            }
         }
-        try {
-            TaskDTO3_V2 newTask = boardAndTaskServices.updatePrivateTask(taskDTO3V2,id,boardId,token);
-            return ResponseEntity.status(HttpStatus.OK).body(newTask);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"error\": \"Unable to create board: " + e.getMessage() + "\"}");
-        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("500");
     }
     @DeleteMapping("/{boardId}/tasks/{taskId}")
-    public ResponseEntity<?> deletePrivateTask(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId, @PathVariable Integer taskId){
+    public ResponseEntity<?> deletePrivateTask(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId, @PathVariable Integer taskId) {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
         }
         try {
             boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
         String oid = userService.getUserId(token);
-        Invite invite = inviteRepo.findByBoardIdAndOid(boardId,oid);
-        if (invite == null && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (myInvite == null && !board.getOwnerId().equalsIgnoreCase(username)) {
+            System.out.println("if myInvite null or not my board");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-//        if(!boardAndTaskServices.checkUsernameAndOwnerId(token,boardId)){
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body("FORBIDDEN");
-//        }
-        try {
-            Object task = boardAndTaskServices.deletePrivateTask(taskId,boardId,token);
-            if (task instanceof TaskDTO3_V2){
-                return ResponseEntity.ok(task);
-            }else if(task.equals("403")){
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(task);
-            }else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Not found");
+        if (myInvite != null || board.getOwnerId().equals(username)) {
+            if (!board.getOwnerId().equals(username) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId) && myInvite.getAccess().equalsIgnoreCase("read")) {
+                try {
+                    Object task = boardAndTaskServices.deletePrivateTask(taskId, boardId, token);
+                    if (task instanceof TaskDTO3_V2) {
+                        return ResponseEntity.ok(task);
+                    } else if (task.equals("403")) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(task);
+                    } else {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Not found");
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("{\"error\": \"Unable to create board: " + e.getMessage() + "\"}");
+                }
             }
-        }catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"Unable to create board: " + e.getMessage() + "\"}");
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("500");
     }
+
+
 // show own board
     @GetMapping
     public AccessBoard getBoard(@RequestHeader(value = "Authorization", required = false) String token){

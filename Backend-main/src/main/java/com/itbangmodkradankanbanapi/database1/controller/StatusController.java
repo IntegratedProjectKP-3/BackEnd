@@ -215,14 +215,18 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        assert myInvite != null;
-        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
+        if (myInvite != null || board.getOwnerId().equals(username)) {
+            if (!board.getOwnerId().equals(username)&& !boardAndTaskServices.checkBoardPublicOrPrivate(boardId) && myInvite.getAccess().equalsIgnoreCase("read")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
         statusServices.deleteStatusAndTransfer(id, newId, boardId, token);
         return ResponseEntity.ok().body(new HashMap<>());
     }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("500");
+    }
+
     @GetMapping("/{boardId}/statuses/{id}")
     public ResponseEntity<?> getStatusDetail(@PathVariable String boardId, @PathVariable Integer id,  @RequestHeader(value = "Authorization", required = false) String token) {
         try {
@@ -231,6 +235,7 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
+
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
