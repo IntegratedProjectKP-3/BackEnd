@@ -262,8 +262,12 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
+        System.out.println(board.getOwnerId());
         if (myInvite != null || board.getOwnerId().equals(username)) {
             if (!board.getOwnerId().equals(username) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId) && myInvite.getAccess().equalsIgnoreCase("read")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("FORBIDDEN");
+            }
                 try {
                     Object task = boardAndTaskServices.deletePrivateTask(taskId, boardId, token);
                     if (task instanceof TaskDTO3_V2) {
@@ -280,10 +284,10 @@ public class BoardController {
                             .body("{\"error\": \"Unable to create board: " + e.getMessage() + "\"}");
                 }
             }
-        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("500");
     }
+
 
 
 // show own board
