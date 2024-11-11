@@ -235,8 +235,13 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
-
-        if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
+        String oid = userService.getUserId(token);
+        Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
+        String username = userService.GetUserName(token);
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)
+                && !board.getOwnerId().equals(username) && myInvite == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Forbidden: No token provided.");
         }else if(inviteService.listAllCollab(token,boardId).equals("403")){
