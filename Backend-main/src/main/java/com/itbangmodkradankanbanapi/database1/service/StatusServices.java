@@ -60,7 +60,7 @@ public class StatusServices {
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
-        if (board1.getVisibility().equals("public") || invite.getAccess() != null){
+        if (board1.getVisibility().equals("public") || invite != null){
             List<Status> status = statusRepo.findAllByBoardId(boardId);
             return mapList(status, StatusDTO.class);
         }
@@ -84,7 +84,8 @@ public class StatusServices {
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
         boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId) || invite.getAccess().equalsIgnoreCase("write"))) {
+        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+                || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
                 List<Status> statusList = statusRepo.findAllByNameIgnoreCase(newStatus.getName());
                 if (!statusList.isEmpty()) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can not duplicate name");
@@ -103,7 +104,8 @@ public class StatusServices {
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
         boardRepo.findById(boardId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId) || invite.getAccess().equalsIgnoreCase("write"))) {
+        if (boardAndTaskServices.showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
+                || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
                 Status currentStatus = statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "status does not exist !!!"));
                 currentStatus.setName(status.getName().trim());
                 if (status.getDescription() != null) {
@@ -122,7 +124,8 @@ public class StatusServices {
         statusRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || invite.getAccess().equalsIgnoreCase("write")) {
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))
+                || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
             Status status = statusRepo.findById(id).orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
             statusRepo.delete(status);
             return "deleted";
@@ -137,7 +140,8 @@ public class StatusServices {
         List<Board> OwnBoard = boardAndTaskServices.showOwnBoard(token);
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId)) || invite.getAccess().equalsIgnoreCase("write")) {
+        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))
+                || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
                 Status status = statusRepo.findById(id)
                         .orElseThrow(() -> new ItemNotFoundForUpdateAndDelete("NOT FOUND"));
                 Status transferStatus = statusRepo.findById(newId)
@@ -160,7 +164,7 @@ public class StatusServices {
         List<Board> ownBoard = boardAndTaskServices.showOwnBoard(token);
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
-        if (invite.getAccess() != null ||board1.getVisibility().equals("public") ||
+        if (invite != null ||board1.getVisibility().equals("public") ||
                 ownBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
             return statusRepo.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "statusId does not exist !!!"));
