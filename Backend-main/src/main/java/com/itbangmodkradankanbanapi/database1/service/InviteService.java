@@ -117,7 +117,6 @@ public class InviteService {
             System.out.println(board.getOwnerId());
             System.out.println(name);
             return "403";
-//            return new AccessBoard();
         }
         if (boardAndTaskServices.checkBoardPublicOrPrivate(boardId) || boardAndTaskServices.checkUsernameAndOwnerId(token, boardId)
                 || (Objects.requireNonNull(invite).getAccess().equalsIgnoreCase("write"))

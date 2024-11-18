@@ -46,14 +46,14 @@ public class    BoardAndTaskServices {
         if (token == null || token.isEmpty()) {
             token = "default-token";
             if(board1.getVisibility().equals("private")){
-                return "Access denied, you do not have permission to view this page";
+                return "403";
             }else if(board1.getVisibility().equals("public")){
                 if (taskRepo.findAllByBoardId(BoardId) == null || taskRepo.findAllByBoardId(BoardId).isEmpty()){
                     return new ArrayList<>();
                 }
                 return listMapper.mapList(taskRepo.findAllByBoardId(BoardId),HomePageTaskDTO.class,modelMapper);
             }
-            return null;
+            return "404";
         }
         String name = userService.GetUserName(token);
         if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(BoardId))|| inviteRepo.findByName(name) != null || board1.getVisibility().equals("public")) {
@@ -158,16 +158,17 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         String name = userService.GetUserName(token);
         String id = userService.getUserId(token);
         List<Board> board =  boardRepo.findAllByOwnerId(name);
+        List<Board> collabs = new ArrayList<>(List.of());
         System.out.println(board);
         List<Invite> invite = inviteRepo.findAllByOid(id);
         for (Invite invite1 : invite){
             Board board1 = boardRepo.findById(invite1.getBoardId()).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-            board.add(board1);
+            collabs.add(board1);
         }
         AccessBoard accessBoard = new AccessBoard();
         accessBoard.setBoards(board);
-        accessBoard.setCollab(invite);
+        accessBoard.setInvites(collabs);
         if (accessBoard.getBoards() != null && !accessBoard.getBoards().isEmpty()){
             return accessBoard;
         }
@@ -189,18 +190,14 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByName(name);
-        if(board1.getVisibility().equals("public") || invite != null){
+        if(board1.getVisibility().equals("public") || invite != null
+                || (!token.isEmpty() && showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId)))){
             return boardRepo.findById(boardId).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
-        }
-        List<Board> OwnBoard = showOwnBoard(token);
-        if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))) {
-            return boardRepo.findById(boardId).orElseThrow(()->
-                    new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
-        }else if(board1.getVisibility().equals("private")){
+        } else if(board1.getVisibility().equals("private")){
             return "403";
         }
-        return "bad request";
+        return "400";
     }
     public Object getFullTask(Integer id,String boardId,String token){
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
@@ -237,19 +234,16 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
                     board1.setVisibility("private");
                 }else if(visibility.getVisibility().equalsIgnoreCase("public")) {
                     board1.setVisibility("public");
-                }else{
+                }else if (!visibility.getVisibility().equalsIgnoreCase("public")
+                        && !visibility.getVisibility().equalsIgnoreCase("private")){
                     System.out.println("bad request");
-                    return "bad request";
+                    return "400";
+                }else{
+                    return "403";
                 }
                 return boardRepo.save(board1);
             }
-        List<Board> boards = boardRepo.findAll();
-        for (Board board : boards){
-            if (boardId.equals(board.getId())){
-                return "You do not have permission to change board visibility mode";
-            }
-        }
-        return "There is a problem. Please try again later";
+        return "500";
     }
     public Boolean checkUsernameAndOwnerId(String token,String BoardId){
         String name = userService.GetUserName(token);

@@ -9,5 +9,5 @@ import java.util.List;
 @Data
 public class AccessBoard {
     List<Board> boards;
-    List<Invite> collab;
+    List<Board> invites;
 }
