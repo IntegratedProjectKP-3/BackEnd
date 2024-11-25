@@ -52,7 +52,9 @@ public class ToolForController {
         if (response != null){
             return response;
         }
-        if ((!boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) ||inviteService.listAllCollab(token,boardId).equals("403") ) {
+        if ((!boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) && inviteService.listAllCollab(token,boardId).equals("403") ) {
+            System.out.println(!boardAndTaskServices.checkBoardPublicOrPrivate(boardId));
+            System.out.println(inviteService.listAllCollab(token,boardId).equals("403"));
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("403");
         }

@@ -57,7 +57,7 @@ public class InviteController {
         }
     }
     @PatchMapping("{boardId}/collabs/{oid}")
-    public ResponseEntity<?> patchCollabs(@PathVariable String boardId,@PathVariable String oid, @RequestHeader(value = "Authorization", required = false) String token , @Valid@RequestBody(required = false) PatchInvite patchInvite ) {
+    public ResponseEntity<?> patchCollabs(@PathVariable String boardId,@PathVariable String oid, @RequestHeader(value = "Authorization", required = false) String token , @Valid @RequestBody(required = false) PatchInvite patchInvite ) {
         Object invite = inviteService.patchInvite(token,boardId,patchInvite,oid);
         if(invite instanceof Invite){
             return ResponseEntity.status(HttpStatus.OK).body(invite);

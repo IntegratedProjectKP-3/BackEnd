@@ -14,11 +14,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
     @Autowired
-    private UserRepo userRpository;
+    private UserRepo userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        User user = userRpository.findByUsername(userName);
+        User user = userRepository.findByUsername(userName);
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, " username and password is incorrect !!");
         }

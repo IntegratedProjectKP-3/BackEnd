@@ -49,6 +49,7 @@ public class BoardController {
     public ResponseEntity<?> getBoardDetail (@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token){
         ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId);
         if (check != null){
+            System.out.println("in controller : " + check);
             return check;
         }
         try {

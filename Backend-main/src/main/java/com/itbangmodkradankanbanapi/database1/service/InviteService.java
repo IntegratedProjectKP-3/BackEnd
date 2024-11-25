@@ -57,12 +57,9 @@ public class InviteService {
             boardRepo.findById(boardId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
             String email = userService.getUserEmail(token);
-//            String oid = userService.getUserId(token);
             Invite invite1 = inviteRepo.findByEmailAndBoardId(inviteDTO.getEmail(),boardId);
             System.out.println(invite1);
             if (invite1 != null || email.equals(inviteDTO.getEmail())) {
-//                System.out.println(invite1);
-//                System.out.println(email.equals(inviteDTO.getEmail()));
                 return "409";
             }
             String newId;
@@ -72,7 +69,6 @@ public class InviteService {
                 existingInvite = inviteRepo.findById(newId);
             } while (existingInvite.isPresent());
             Invite invite = new Invite(newId, user.getName(), user.getEmail(), inviteDTO.getAccessRight(), boardId, null,user.getOid());
-            System.out.println(inviteDTO.getAccessRight());
             inviteRepo.save(invite);
             return invite;
         }
