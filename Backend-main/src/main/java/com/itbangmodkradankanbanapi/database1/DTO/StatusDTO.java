@@ -1,5 +1,6 @@
 package com.itbangmodkradankanbanapi.database1.DTO;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,7 @@ public class StatusDTO {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "statusId")
+        @Nullable
         private Integer id;
         @NotBlank
         @Column(name = "statusName")
