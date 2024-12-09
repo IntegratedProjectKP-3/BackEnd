@@ -40,6 +40,7 @@ public class    BoardAndTaskServices {
     private InviteRepo inviteRepo;
     @Autowired
     private UserRepo userRepo;
+
     public Object getPrivateTask(String BoardId,String token){
         Board board1 = boardRepo.findById(BoardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
@@ -56,7 +57,7 @@ public class    BoardAndTaskServices {
             return "404";
         }
         String name = userService.GetUserName(token);
-        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(BoardId))|| inviteRepo.findByName(name) != null || board1.getVisibility().equals("public")) {
+        if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(BoardId))|| inviteRepo.findByNameAndBoardId(name,BoardId) != null || board1.getVisibility().equals("public")) {
             if (taskRepo.findAllByBoardId(BoardId) == null || taskRepo.findAllByBoardId(BoardId).isEmpty()){
                 return new ArrayList<>();
             }
@@ -73,7 +74,7 @@ public class    BoardAndTaskServices {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access: Token is required.");
         }
         String name = userService.GetUserName(token);
-        Invite invite = inviteRepo.findByName(name);
+        Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
         if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
                 ||  (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
                 Status statusObject = statusRepo.findById(newTask.getStatus()).orElseThrow(() ->
@@ -95,7 +96,7 @@ public class    BoardAndTaskServices {
         boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         String name = userService.GetUserName(token);
-        Invite invite = inviteRepo.findByName(name);
+        Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
         if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
                 || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
             Task existingTask = taskRepo.findById(TaskId).orElseThrow(() ->
@@ -116,7 +117,7 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
     Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
     String name = userService.GetUserName(token);
-    Invite invite = inviteRepo.findByName(name);
+    Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
     if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
             || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
             Task task =  taskRepo.findById(TaskId).orElseThrow(() ->
@@ -189,7 +190,7 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         String name = userService.GetUserName(token);
-        Invite invite = inviteRepo.findByName(name);
+        Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
         if(board1.getVisibility().equals("public") || invite != null
                 || (!token.isEmpty() && showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId)))){
             return boardRepo.findById(boardId).orElseThrow(()->
@@ -209,7 +210,7 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
         List<Board> OwnBoard = showOwnBoard(token);
         System.out.println(boardId);
             String name = userService.GetUserName(token);
-            Invite invite = inviteRepo.findByName(name);
+            Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
             if (OwnBoard.stream().anyMatch(board -> board.getId().equals(boardId))
                     || invite != null || board1.getVisibility().equals("public")) {
             System.out.println("id : " + id);
@@ -225,7 +226,7 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
     @Transactional
     public Object TogglePrivateAndPublicBoard(String boardId, String token, VisibilityDTO visibility){
         String name = userService.GetUserName(token);
-        Invite invite = inviteRepo.findByName(name);
+        Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
         if (showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId))
                     || (invite != null && invite.getAccess().equalsIgnoreCase("write"))) {
                 Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
