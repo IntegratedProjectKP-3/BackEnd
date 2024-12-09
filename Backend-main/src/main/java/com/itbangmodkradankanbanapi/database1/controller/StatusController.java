@@ -153,20 +153,31 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        assert myInvite != null;
+        else if (myInvite != null) {
+            if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("FORBIDDEN");
+            } else if (statusDTO == null || !isValid(statusDTO)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Bad Request: Invalid task data");
+            }
+            StatusDTO updateStatus = statusServices.updateStatus(id, statusDTO, token, boardId);
+            if (updateStatus != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(updateStatus);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+            }
+        }else if (board.getOwnerId().equalsIgnoreCase(username)){
+            StatusDTO updateStatus = statusServices.updateStatus(id, statusDTO, token, boardId);
+            if (updateStatus != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(updateStatus);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+            }
+        }else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("500");
 
-        if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("FORBIDDEN");
-        } else if (statusDTO == null || !isValid(statusDTO)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Bad Request: Invalid task data");
-        }
-        StatusDTO updateStatus = statusServices.updateStatus(id, statusDTO, token, boardId);
-        if (updateStatus != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(updateStatus);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
         }
     }
 
