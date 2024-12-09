@@ -105,7 +105,7 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
         }
-        assert myInvite != null;
+        else if (myInvite != null){
         if (myInvite.getAccess().equalsIgnoreCase("read") && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("FORBIDDEN");
@@ -121,6 +121,13 @@ public class StatusController {
         else{
             StatusDTO createdStatus = statusServices.addStatus(status, token, boardId);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdStatus);
+        }
+        }else if (board.getOwnerId().equalsIgnoreCase(username)){
+            StatusDTO createdStatus = statusServices.addStatus(status, token, boardId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdStatus);
+        }else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("500");
         }
     }
 
