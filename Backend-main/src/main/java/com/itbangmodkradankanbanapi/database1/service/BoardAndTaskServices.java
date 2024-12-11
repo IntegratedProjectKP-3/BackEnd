@@ -207,7 +207,7 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
     public Object getFullTask(Integer id,String boardId,String token){
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
-        if(token == null && board1.getVisibility().equals("public")){
+        if(board1.getVisibility().equals("public")){
             return taskRepo.findById(id).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
         }else{

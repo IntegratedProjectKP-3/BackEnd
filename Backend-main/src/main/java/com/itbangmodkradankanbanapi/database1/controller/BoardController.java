@@ -122,7 +122,7 @@ public class BoardController {
     }
     @GetMapping("/{boardId}/tasks/{id}")
     public ResponseEntity<?> getTask(@PathVariable String boardId,@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token){
-        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId,"no");
+        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId,"yes");
         if (check != null){
             return check;
         }

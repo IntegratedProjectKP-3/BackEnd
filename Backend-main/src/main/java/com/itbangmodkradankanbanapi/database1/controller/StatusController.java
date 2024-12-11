@@ -271,11 +271,24 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+
+        if (board.getVisibility().equals("public")){
+            Object statusDetail = statusServices.getStatusDetail(id, boardId, token);
+            if (statusDetail.equals("403")){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(statusDetail);
+            }else if(statusDetail.equals("error")){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(statusDetail);
+            }else if(statusDetail instanceof Status){
+                return ResponseEntity.status(HttpStatus.OK).body(statusDetail);
+            }else{
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(statusDetail);
+            }
+        }
         String oid = userService.getUserId(token);
         Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
         String username = userService.GetUserName(token);
-        Board board = boardRepo.findById(boardId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)
                 && !board.getOwnerId().equals(username) && myInvite == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
