@@ -26,25 +26,32 @@ import javax.sql.DataSource;
 
 public class Database1config {
 
-    //@Primary
-//@Bean(name = "Database1DataSource")
-//public DataSource Database1DataSource(
-//        @Value("${mysql_url:mysql}") String mysqlUrl,
-//        @Value("${mysql_user:root}") String mysqlUser,
-//        @Value("${mysql_password:mysql@sit}") String mysqlPassword) {
-//    return DataSourceBuilder.create()
-//            .url("jdbc:mysql://" + mysqlUrl + ":3306/integratedproject")
-//            .username(mysqlUser)
-//            .password(mysqlPassword)
-//            .driverClassName("com.mysql.cj.jdbc.Driver")
-//            .build();
-//}
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource")
+//    public DataSourceProperties Database1DataSourceProperties() {
+//        return new DataSourceProperties();
+//    }
 
-    @Primary
+
+    @Primary // use for Virtual Machine
     @Bean(name = "Database1DataSource")
-    public DataSource Database1DataSource() {
-        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
+    public DataSource Database1DataSource(
+            @Value("${mysql_url:mysql}") String mysqlUrl,
+            @Value("${mysql_user:root}") String mysqlUser,
+            @Value("${mysql_password:mysql@sit}") String mysqlPassword) {
+        return DataSourceBuilder.create()
+                .url("jdbc:mysql://" + mysqlUrl + ":3306/integratedproject")
+                .username(mysqlUser)
+                .password(mysqlPassword)
+                .driverClassName("com.mysql.cj.jdbc.Driver")
+                .build();
     }
+
+//    @Primary //use for Local
+//    @Bean(name = "Database1DataSource")
+//    public DataSource Database1DataSource() {
+//        return DataSourceBuilder.create() .url("jdbc:mysql://localhost:3306/integratedproject") .username("root") .password("mysql@sit") .driverClassName("com.mysql.cj.jdbc.Driver") .build();
+//    }
 
     @Primary
     @Bean (name="Database1EntityManagerFactory")
