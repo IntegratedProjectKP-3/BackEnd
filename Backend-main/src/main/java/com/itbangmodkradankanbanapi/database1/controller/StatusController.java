@@ -56,11 +56,21 @@ public class StatusController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("NOT_FOUND");
         }
+        Board board = boardRepo.findById(boardId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (((token == null || token.isEmpty()) && board.getVisibility().equals("public"))){
+            Object newTask = statusServices.findPrivateStatus(token, boardId);
+            if (newTask instanceof List<?>) {
+                return ResponseEntity.status(HttpStatus.OK).body(newTask);
+            } else if(newTask.equals("403")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(newTask);
+            }else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT FOUND");
+            }
+        }
         String oid = userService.getUserId(token);
         Invite myInvite = inviteRepo.findByBoardIdAndOid(boardId, oid);
         String username = userService.GetUserName(token);
-        Board board = boardRepo.findById(boardId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
         if ((token == null || token.isEmpty()) && !boardAndTaskServices.checkBoardPublicOrPrivate(boardId)
                 && !board.getOwnerId().equals(username) && myInvite == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)

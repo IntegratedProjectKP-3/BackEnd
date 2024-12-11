@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
+
 @Service
 public class ToolForController {
     @Autowired
@@ -34,25 +36,26 @@ public class ToolForController {
     @Autowired
     private InviteRepo inviteRepo;
 
-    public ResponseEntity<?> checkTokenAndCheckPublicPrivate(String token, String boardId){
-        if (token == null || token.isEmpty()) {
+    public ResponseEntity<?> checkTokenAndCheckPublicPrivate(String token, String boardId,String read){
+        if ((token == null || token.isEmpty()) && Objects.equals(read, "no")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("UNAUTHORIZED: No token provided.");
         }
         try {
             boardAndTaskServices.checkBoardPublicOrPrivate(boardId);
+            System.out.println("yes");
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("404");
         }
         return null;
     }
-    public ResponseEntity<?> checkPublicAndPrivate (String token , String boardId){
-        ResponseEntity<?> response = checkTokenAndCheckPublicPrivate(token,boardId);
+    public ResponseEntity<?> checkPublicAndPrivate (String token , String boardId,String read){
+        ResponseEntity<?> response = checkTokenAndCheckPublicPrivate(token,boardId,read);
         if (response != null){
             return response;
         }
-        if ((!boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) && inviteService.listAllCollab(token,boardId).equals("403") ) {
+        else if ((!boardAndTaskServices.checkBoardPublicOrPrivate(boardId)) && inviteService.listAllCollab(token,boardId).equals("403") ) {
             System.out.println(!boardAndTaskServices.checkBoardPublicOrPrivate(boardId));
             System.out.println(inviteService.listAllCollab(token,boardId).equals("403"));
             return ResponseEntity.status(HttpStatus.FORBIDDEN)

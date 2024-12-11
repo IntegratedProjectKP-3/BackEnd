@@ -47,13 +47,15 @@ public class BoardController {
 
     @GetMapping("/{boardId}")
     public ResponseEntity<?> getBoardDetail (@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token){
-        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId);
+        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId,"yes");
         if (check != null){
             System.out.println("in controller : " + check);
             return check;
         }
         try {
+            System.out.println("before getBoardDetail");
             Object newBoard = boardAndTaskServices.getBoardDetail(token, boardId);
+            System.out.println("getBoardDetail");
             if (newBoard instanceof String){
                 return toolForController.errorResponse(newBoard);
             }else{
@@ -83,7 +85,7 @@ public class BoardController {
 
     @GetMapping("/{boardId}/tasks")
     public ResponseEntity<?> getPrivateTask(@PathVariable String boardId,@RequestHeader(value = "Authorization", required = false) String token)  {
-        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId);
+        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId,"yes");
         if (check != null){
             return check;
         }
@@ -98,7 +100,7 @@ public class BoardController {
     public ResponseEntity<?> NewPrivateTask(@Valid @RequestBody(required = false) TaskDTO3_V2_addTask taskDTO3V2,
                                             @PathVariable String boardId,
                                             @RequestHeader(value = "Authorization", required = false) String token) {
-        ResponseEntity<?> response = toolForController.checkTokenAndCheckPublicPrivate(token,boardId);
+        ResponseEntity<?> response = toolForController.checkTokenAndCheckPublicPrivate(token,boardId,"no");
         if(response != null){
             return response;
         }
@@ -120,7 +122,7 @@ public class BoardController {
     }
     @GetMapping("/{boardId}/tasks/{id}")
     public ResponseEntity<?> getTask(@PathVariable String boardId,@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token){
-        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId);
+        ResponseEntity<?> check =  toolForController.checkPublicAndPrivate(token,boardId,"no");
         if (check != null){
             return check;
         }
@@ -141,7 +143,7 @@ public class BoardController {
     }
     @PutMapping("/{boardId}/tasks/{id}")
     public ResponseEntity<?> updatePrivateTask(@Valid @RequestBody(required = false) TaskDTO3_V2_addTask taskDTO3V2, @PathVariable String boardId,@PathVariable Integer id,@RequestHeader(value = "Authorization", required = false) String token) {
-        ResponseEntity<?> response = toolForController.checkTokenAndCheckPublicPrivate(token,boardId);
+        ResponseEntity<?> response = toolForController.checkTokenAndCheckPublicPrivate(token,boardId,"no");
         if(response != null){
             return response;
         }
@@ -213,7 +215,7 @@ public class BoardController {
 
     @PatchMapping("/{boardId}")
     public ResponseEntity<?> changeMode(@RequestHeader(value = "Authorization", required = false) String token, @PathVariable String boardId,@RequestBody(required = false) VisibilityDTO visibility){
-        ResponseEntity<?> check = toolForController.checkPublicAndPrivate(token,boardId);
+        ResponseEntity<?> check = toolForController.checkPublicAndPrivate(token,boardId,"no");
         if(check != null){
             return check;
         }else if (visibility == null || visibility.getVisibility() == null) {

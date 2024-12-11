@@ -189,9 +189,13 @@ public Object  deletePrivateTask(Integer TaskId,String boardId,String token) {
     public Object getBoardDetail(String token,String boardId){
         Board board1 = boardRepo.findById(boardId).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "BoardId does not exist !!!"));
+        if (((token == null || token.isEmpty()) && board1.getVisibility().equals("public"))){
+            return boardRepo.findById(boardId).orElseThrow(()->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
+        }
         String name = userService.GetUserName(token);
         Invite invite = inviteRepo.findByNameAndBoardId(name,boardId);
-        if(board1.getVisibility().equals("public") || invite != null
+        if( board1.getVisibility().equals("public") || invite != null
                 || (!token.isEmpty() && showOwnBoard(token).stream().anyMatch(board -> board.getId().equals(boardId)))){
             return boardRepo.findById(boardId).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND,"TaskId does not exist !!!"));
